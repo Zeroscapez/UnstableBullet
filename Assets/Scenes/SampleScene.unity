@@ -1260,7 +1260,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 9999
+  m_text: 999
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1369,7 +1369,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   length: 0
   cam: {fileID: 519420031}
-  scrollSpeed: 2
+  scrollSpeed: 11
 --- !u!212 &664808016
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1708,6 +1708,64 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 793399200}
   m_CullTransparentMesh: 1
+--- !u!1 &903782416
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 903782417}
+  - component: {fileID: 903782418}
+  m_Layer: 0
+  m_Name: Spawner (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &903782417
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 903782416}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: -1.08, z: 0}
+  m_LocalScale: {x: 0.2, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1995408933}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
+--- !u!114 &903782418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 903782416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e222732f12b2da48ab8b52cdedeaeea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 1199622556724814269, guid: a5012a3856ef1cb4fbe8870675838293, type: 3}
+  bulletLife: 2
+  speed: 15
+  activePatterns: 08000000
+  firingRate: 0.1
+  bulletCount: 5
+  spreadAngle: 45
+  waveFrequency: 1
+  waveAmplitude: 33
+  spiralRotationSpeed: 10
+  rotateSpawner: 0
+  rotationSpeed: 1
+  target: {fileID: 1853995252}
+  targetPlayer: 0
 --- !u!1 &1011699401
 GameObject:
   m_ObjectHideFlags: 0
@@ -2718,7 +2776,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 0.6
 --- !u!114 &1682728132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3015,7 +3073,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa4e4e99c5bed5846a25525636982a7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
+  moveSpeed: 13
   fireOrigin: {fileID: 1899672297}
   bulletPrefab: {fileID: 1199622556724814269, guid: 23aa44756a7947145946cf1ef363ea74, type: 3}
   grazeScore: 1000
@@ -3145,8 +3203,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1972259735}
+  - component: {fileID: 1972259736}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Spawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3160,13 +3219,39 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1972259734}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 0, y: -1.08, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.2, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1995408933}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
+--- !u!114 &1972259736
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1972259734}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e222732f12b2da48ab8b52cdedeaeea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 1199622556724814269, guid: a5012a3856ef1cb4fbe8870675838293, type: 3}
+  bulletLife: 2
+  speed: 15
+  activePatterns: 04000000
+  firingRate: 0.1
+  bulletCount: 5
+  spreadAngle: 45
+  waveFrequency: 1
+  waveAmplitude: 1
+  spiralRotationSpeed: 10
+  rotateSpawner: 1
+  rotationSpeed: 1
+  target: {fileID: 1853995252}
+  targetPlayer: 0
 --- !u!1 &1977108001
 GameObject:
   m_ObjectHideFlags: 0
@@ -3334,6 +3419,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1972259735}
+  - {fileID: 903782417}
+  - {fileID: 2097673894}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1995408934
@@ -3353,6 +3440,64 @@ MonoBehaviour:
   bulletPrefab: {fileID: 1199622556724814269, guid: a5012a3856ef1cb4fbe8870675838293, type: 3}
   firePoint: {fileID: 1972259735}
   moveRandom: 0
+--- !u!1 &2097673893
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2097673894}
+  - component: {fileID: 2097673895}
+  m_Layer: 0
+  m_Name: Spawner (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2097673894
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2097673893}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: -1.08, z: 0}
+  m_LocalScale: {x: 0.2, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1995408933}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
+--- !u!114 &2097673895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2097673893}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e222732f12b2da48ab8b52cdedeaeea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bulletPrefab: {fileID: 1199622556724814269, guid: a5012a3856ef1cb4fbe8870675838293, type: 3}
+  bulletLife: 2
+  speed: 15
+  activePatterns: 00000000
+  firingRate: 0.1
+  bulletCount: 5
+  spreadAngle: 45
+  waveFrequency: 1
+  waveAmplitude: 1
+  spiralRotationSpeed: 10
+  rotateSpawner: 1
+  rotationSpeed: 1
+  target: {fileID: 1853995252}
+  targetPlayer: 0
 --- !u!1 &2116519331
 GameObject:
   m_ObjectHideFlags: 0

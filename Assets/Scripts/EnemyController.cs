@@ -25,7 +25,7 @@ public class EnemyController : MonoBehaviour
           
         }
         // Start shooting projectiles
-        StartCoroutine(ShootProjectiles());
+       // StartCoroutine(ShootProjectiles());
     }
 
     void Update()
@@ -48,35 +48,32 @@ public class EnemyController : MonoBehaviour
         targetPosition = new Vector2(randomX, randomY);
     }
 
-    IEnumerator ShootProjectiles()
-    {
-        while (true)
-        {
-            if (bulletPrefab != null && firePoint != null)
-            {
-                // Instantiate the bullet
-                GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
+    //IEnumerator ShootProjectiles()
+    //{
+    //    while (true)
+    //    {
+    //        if (bulletPrefab != null && firePoint != null)
+    //        {
+    //            // Instantiate the bullet
+    //            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.identity);
 
-                Bullet bulletScript = bullet.GetComponent<Bullet>();
-                if (bulletScript != null)
-                {
-                    bulletScript.isPlayerBullet = false;
-                }
-                else
-                {
-                    Debug.LogError("Bullet script not found on bulletPrefab!");
-                }
-                    // Calculate the direction downwards
-                    Vector2 shootDirection = Vector2.down;
+    //            Bullet bulletScript = bullet.GetComponent<Bullet>();
 
-                // Apply velocity to the bullet
-                Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-                if (rb != null)
-                {
-                    rb.velocity = shootDirection * 10f; // Adjust speed as needed
-                }
-            }
-            yield return new WaitForSeconds(fireRate); // Wait before firing the next shot
-        }
-    }
+               
+
+                
+
+    //            if (bulletScript != null)
+    //            {
+    //                bulletScript.isPlayerBullet = false;
+    //            }
+    //            else
+    //            {
+    //                Debug.LogError("Bullet script not found on bulletPrefab!");
+    //            }
+               
+    //        }
+    //        yield return new WaitForSeconds(fireRate); // Wait before firing the next shot
+    //    }
+    //}
 }

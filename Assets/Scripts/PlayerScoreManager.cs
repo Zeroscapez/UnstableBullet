@@ -93,7 +93,7 @@ public class PlayerScoreManager : MonoBehaviour
 
         if(disruptText != null)
         {
-            disruptText.text = disrupt.ToString("D4");
+            disruptText.text = disrupt.ToString("D3");
         }
     }
 

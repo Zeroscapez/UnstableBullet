@@ -161,5 +161,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd0291dad4fb6a841b6052c8649a8cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lifetime: 3
+  bulletLife: 5
+  rotation: 3
+  speed: 1
   isPlayerBullet: 0
+  hasHitPlayer: 0
+  hasBeenGrazed: 0
