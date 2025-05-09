@@ -9,6 +9,7 @@ public class Enemy : MonoBehaviour
     public float currentHealth; // Current health of the enemy
     public int scoreValue = 100; // Score awarded when the enemy is defeated
 
+
     
 
     protected virtual void Start()

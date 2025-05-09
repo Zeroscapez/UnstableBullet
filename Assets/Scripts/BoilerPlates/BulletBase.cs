@@ -10,6 +10,9 @@ public abstract class BulletBase : MonoBehaviour
     public float homingSpeed = 2f; // Speed at which the bullet adjusts its direction
     public Transform target; // Target to home onto (e.g., the player)
 
+    [HideInInspector]
+    public GameObject bulletPrefab; // Reference to the prefab this bullet belongs to
+
     private float timer = 0f;
 
     protected virtual void FixedUpdate()
@@ -44,14 +47,27 @@ public abstract class BulletBase : MonoBehaviour
 
     private void CheckBounds()
     {
-        if (transform.position.x < PlayAreaManager.Instance.MinX ||
-            transform.position.x > PlayAreaManager.Instance.MaxX ||
-            transform.position.y < PlayAreaManager.Instance.MinY ||
-            transform.position.y > PlayAreaManager.Instance.MaxY)
+        if (transform.position.x < PlayAreaManager.Instance.MinX - 50 ||
+            transform.position.x > PlayAreaManager.Instance.MaxX + 50 ||
+            transform.position.y < PlayAreaManager.Instance.MinY - 50 ||
+            transform.position.y > PlayAreaManager.Instance.MaxY + 50)
         {
-            Destroy(gameObject);
+            ReturnToPool();
         }
     }
 
     protected abstract void OnTriggerEnter2D(Collider2D other);
+
+    protected void ReturnToPool()
+    {
+        if (bulletPrefab != null)
+        {
+            BulletPoolManager.Instance.ReturnBullet(bulletPrefab, gameObject);
+        }
+        else
+        {
+            Debug.LogWarning("Bullet prefab reference is missing. Destroying the bullet.");
+            Destroy(gameObject);
+        }
+    }
 }

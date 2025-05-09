@@ -99,7 +99,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 1199622556724814269, guid: a5012a3856ef1cb4fbe8870675838293, type: 3}
   bulletLife: 0
-  speed: 15
+  speed: 11
   activePatterns: 08000000
   firingRate: 1
   bulletCount: 33

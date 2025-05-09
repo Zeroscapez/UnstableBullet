@@ -31,6 +31,12 @@ public class BulletSpawner : MonoBehaviour
 
     private float timer = 0f;
 
+    public void Start()
+    {
+        // Register the bullet prefab with the pool manager
+        BulletPoolManager.Instance.RegisterBulletPrefab(bulletPrefab, 20, this.transform);
+    }
+
     void FixedUpdate()
     {
         timer += Time.deltaTime;
@@ -106,19 +112,16 @@ public class BulletSpawner : MonoBehaviour
 
     private void SpawnBullet(Quaternion rotation)
     {
-        GameObject spawnedBullet = Instantiate(bulletPrefab, transform.position, rotation);
+        GameObject bullet = BulletPoolManager.Instance.GetBullet(bulletPrefab);
+        bullet.transform.position = transform.position;
+        bullet.transform.rotation = rotation;
 
-        if (spawnedBullet.TryGetComponent(out BulletBase bullet))
+        BulletBase bulletScript = bullet.GetComponent<BulletBase>();
+        if (bulletScript != null)
         {
-            bullet.bulletLife = bulletLife;
-            bullet.speed = speed;
-
-            if (bullet is EnemyBullet enemyBullet && targetPlayer && target != null)
-            {
-                enemyBullet.isHoming = true;
-                enemyBullet.target = target;
-                enemyBullet.homingSpeed = 2f;
-            }
+            bulletScript.speed = speed;
+            bulletScript.bulletLife = bulletLife;
+            bulletScript.bulletPrefab = bulletPrefab; // Set the prefab reference
         }
     }
 

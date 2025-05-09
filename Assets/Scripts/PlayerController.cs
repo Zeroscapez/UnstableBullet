@@ -14,7 +14,8 @@ public class PlayerController : MonoBehaviour
     [Header("Settings")]
     public Transform fireOrigin;
     public GameObject bulletPrefab;
-   
+    public int playerBulletPoolSize = 20;
+
     public int grazeScore = 1000; // Score for grazing an enemy bullet
 
     PlayerControls controls;
@@ -41,6 +42,12 @@ public class PlayerController : MonoBehaviour
         controls.Player.Fire.canceled += ctx => StopFiring();
     }
 
+   private void Start()
+    {
+        // Register the player's bullet prefab with the pool manager
+        BulletPoolManager.Instance.RegisterBulletPrefab(bulletPrefab, playerBulletPoolSize, this.transform);
+    }
+
     private void OnEnable()
     {
         controls.Enable();
@@ -51,11 +58,7 @@ public class PlayerController : MonoBehaviour
         controls.Disable();
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    
 
     // Update is called once per frame
     void Update()
@@ -74,24 +77,29 @@ public class PlayerController : MonoBehaviour
     {
         if (bulletPrefab != null && fireOrigin != null)
         {
-            GameObject bullet = Instantiate(bulletPrefab, fireOrigin.position, fireOrigin.rotation);
+            // Get a bullet from the pool
+            GameObject bullet = BulletPoolManager.Instance.GetBullet(bulletPrefab);
 
-            Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+            // Set the bullet's position and rotation to match the fireOrigin
+            bullet.transform.position = fireOrigin.position;
+            bullet.transform.rotation = fireOrigin.rotation;
 
-            Bullet bulletScript = bullet.GetComponent<Bullet>();
+            // Get the PlayerBullet script and set the prefab reference
+            PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
             if (bulletScript != null)
             {
-                bulletScript.isPlayerBullet = true; // Set the bullet as a player bullet
+                bulletScript.bulletPrefab = bulletPrefab; // Set the prefab reference
             }
             else
             {
-                Debug.LogError("Bullet script not found on bulletPrefab!");
+                Debug.LogError("PlayerBullet script not found on bulletPrefab!");
             }
 
-                if (rb != null)
+            // Set the bullet's velocity
+            Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+            if (rb != null)
             {
                 rb.velocity = fireOrigin.up * 10f; // Adjust speed as needed
-                Debug.Log($"Bullet fired with velocity: {rb.velocity}");
             }
             else
             {
@@ -99,6 +107,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
 
     void StartFiring()
     {

@@ -19,7 +19,7 @@ public class PlayerGrazeCheck : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D col)
     {
-        Debug.Log("Bullet Enter");
+   
 
         // Check if the collider belongs to a bullet
         if (((1 << col.gameObject.layer) & bulletLayer) == 0) return;
@@ -32,7 +32,7 @@ public class PlayerGrazeCheck : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D col)
     {
-        Debug.Log("Bullet Left");
+     
         if (((1 << col.gameObject.layer) & bulletLayer) == 0) return;
 
         var bullet = col.GetComponent<EnemyBullet>();

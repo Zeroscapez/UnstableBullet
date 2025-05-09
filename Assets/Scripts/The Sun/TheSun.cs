@@ -134,7 +134,7 @@ public class TheSun : Enemy
         base.TakeDamage(damage);
 
         // Additional logic for taking damage (e.g., visual effects)
-        Debug.Log($"The Sun took {damage} damage. Current health: {currentHealth}");
+       
     }
 
     protected override void Die()
