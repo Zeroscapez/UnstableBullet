@@ -2,9 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion }
 public class BulletSpawner : MonoBehaviour
 {
-    enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion }
+    
 
     [Header("Bullet Prefab")]
     public GameObject bulletPrefab;
@@ -12,13 +13,13 @@ public class BulletSpawner : MonoBehaviour
     public float speed;
 
     [Header("Spawn Attributes")]
-    [SerializeField] private List<SpawnerType> activePatterns = new List<SpawnerType>(); // List of active patterns
-    [SerializeField] private float firingRate = 1f;
-    [SerializeField] private int bulletCount = 5; // Number of bullets for patterns like Fan, Burst, or Explosion
-    [SerializeField] private float spreadAngle = 45f; // Spread angle for Fan or Arc patterns
-    [SerializeField] private float waveFrequency = 1f; // Frequency for Wave pattern
-    [SerializeField] private float waveAmplitude = 1f; // Amplitude for Wave pattern
-    [SerializeField] private float spiralRotationSpeed = 10f; // Speed of rotation for Spiral pattern
+    [SerializeField] public List<SpawnerType> activePatterns = new List<SpawnerType>(); // List of active patterns
+    [SerializeField] public float firingRate = 1f;
+    [SerializeField] public int bulletCount = 5; // Number of bullets for patterns like Fan, Burst, or Explosion
+    [SerializeField] public float spreadAngle = 45f; // Spread angle for Fan or Arc patterns
+    [SerializeField] public float waveFrequency = 1f; // Frequency for Wave pattern
+    [SerializeField] public float waveAmplitude = 1f; // Amplitude for Wave pattern
+    [SerializeField] public float spiralRotationSpeed = 10f; // Speed of rotation for Spiral pattern
 
     [Header("Rotation Settings")]
     public bool rotateSpawner = false; // Enable/disable spawner rotation
@@ -106,21 +107,17 @@ public class BulletSpawner : MonoBehaviour
     private void SpawnBullet(Quaternion rotation)
     {
         GameObject spawnedBullet = Instantiate(bulletPrefab, transform.position, rotation);
-        Bullet bullet = spawnedBullet.GetComponent<Bullet>();
-        if (bullet != null)
+
+        if (spawnedBullet.TryGetComponent(out BulletBase bullet))
         {
             bullet.bulletLife = bulletLife;
             bullet.speed = speed;
-            bullet.isPlayerBullet = false;
-            bullet.hasHitPlayer = false;
-            bullet.hasBeenGrazed = false;
 
-            // Enable homing and assign the target
-            if (targetPlayer && target != null)
+            if (bullet is EnemyBullet enemyBullet && targetPlayer && target != null)
             {
-                bullet.isHoming = true;
-                bullet.target = target;
-                bullet.homingSpeed = 2f;
+                enemyBullet.isHoming = true;
+                enemyBullet.target = target;
+                enemyBullet.homingSpeed = 2f;
             }
         }
     }

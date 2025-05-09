@@ -15,7 +15,7 @@ public class PlayerGrazeCheck : MonoBehaviour
     public LayerMask bulletLayer;
 
     // Track bullets currently inside the graze trigger
-    public HashSet<Bullet> bulletsInRange = new HashSet<Bullet>();
+    public HashSet<EnemyBullet> bulletsInRange = new HashSet<EnemyBullet>();
 
     private void OnTriggerEnter2D(Collider2D col)
     {
@@ -23,7 +23,7 @@ public class PlayerGrazeCheck : MonoBehaviour
 
         // Check if the collider belongs to a bullet
         if (((1 << col.gameObject.layer) & bulletLayer) == 0) return;
-        var b = col.GetComponent<Bullet>();
+        var b = col.GetComponent<EnemyBullet>();
 
         //Add bullets to set
         if (b != null)
@@ -35,7 +35,7 @@ public class PlayerGrazeCheck : MonoBehaviour
         Debug.Log("Bullet Left");
         if (((1 << col.gameObject.layer) & bulletLayer) == 0) return;
 
-        var bullet = col.GetComponent<Bullet>();
+        var bullet = col.GetComponent<EnemyBullet>();
         if (bullet != null && bulletsInRange.Contains(bullet))
         {
             // Check if the distance between bullet and the center of the player is greater than the hitbox radius.
@@ -52,7 +52,7 @@ public class PlayerGrazeCheck : MonoBehaviour
         }
     }
 
-    private void OnGraze(Bullet bullet)
+    private void OnGraze(EnemyBullet bullet)
     {
         // Award points, do the cool sparkles
         PlayerScoreManager.Instance.AddDisrupt(grazeScoreValue);

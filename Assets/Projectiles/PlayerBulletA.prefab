@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7785598428878219696}
   - component: {fileID: 8415405501407612586}
   - component: {fileID: 3766130057578605124}
-  - component: {fileID: -3493584287723172138}
+  - component: {fileID: -79940359980180551}
   m_Layer: 0
   m_Name: PlayerBulletA
   m_TagString: Untagged
@@ -76,10 +76,10 @@ SpriteRenderer:
   m_SortingLayerID: 332214037
   m_SortingLayer: 4
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b9ad3af189ab1a44790a1eedc7d93cc9, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
-  m_FlipY: 0
+  m_FlipY: 1
   m_DrawMode: 0
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
@@ -149,7 +149,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &-3493584287723172138
+--- !u!114 &-79940359980180551
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,9 +158,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1199622556724814269}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fd0291dad4fb6a841b6052c8649a8cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e1e4ab6998f7e5a4db7062b4a46c6e22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lifetime: 3
-  isPlayerBullet: 0
-  hasBeenGrazed: 0
+  bulletLife: 1
+  speed: 0
+  isHoming: 0
+  homingSpeed: 2
+  target: {fileID: 0}

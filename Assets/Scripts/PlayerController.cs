@@ -132,27 +132,6 @@ public class PlayerController : MonoBehaviour
         OnPlayerDied?.Invoke();
     }
 
-    //private void OnTriggerEnter2D(Collider2D other)
-    //{
-    //    if (other.gameObject.CompareTag("EnemyBullet")) // Assuming enemy bullets have the "EnemyBullet" tag
-    //    {
-    //        // Trigger graze logic
-    //        Graze();
-    //    }
-    //}
-
-    //private void Graze()
-    //{
-    //    PlayerScoreManager scoreManager = FindObjectOfType<PlayerScoreManager>();
-    //    if (scoreManager != null)
-    //    {
-    //        scoreManager.AddScore(grazeScore);
-    //        Debug.Log("Grazed an enemy bullet! Added " + grazeScore + " points.");
-    //    }
-    //    else
-    //    {
-    //        Debug.LogError("PlayerScoreManager not found in the scene!");
-    //    }
-    //}
+   
 }
 
