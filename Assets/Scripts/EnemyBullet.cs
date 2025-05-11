@@ -6,6 +6,8 @@ public class EnemyBullet : BulletBase
 {
     public bool hasHitPlayer;
     public bool hasBeenGrazed;
+
+
     protected override void OnTriggerEnter2D(Collider2D other)
     {
         if (other.gameObject.layer == LayerMask.NameToLayer("PlayerHitbox"))
@@ -14,7 +16,7 @@ public class EnemyBullet : BulletBase
      
             hasHitPlayer = true;
             PlayerScoreManager.Instance.AddScore(-100);
-            Destroy(gameObject); // Destroy the bullet
+            ReturnToPool();
         }
     }
 }

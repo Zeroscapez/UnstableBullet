@@ -98,7 +98,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bulletPrefab: {fileID: 1199622556724814269, guid: a5012a3856ef1cb4fbe8870675838293, type: 3}
-  bulletLife: 0
+  bulletLife: 5
   speed: 11
   activePatterns: 08000000
   firingRate: 1
@@ -109,5 +109,8 @@ MonoBehaviour:
   spiralRotationSpeed: 10
   rotateSpawner: 0
   rotationSpeed: 1
-  target: {fileID: 0}
-  targetPlayer: 0
+  target: {fileID: 1408406420667754400, guid: 8a6c368f843a12a41b4d9bef3d35965a, type: 3}
+  enableHoming: 0
+  poolSize: 20
+  maxPoolSize: 100
+  bulletOwner: {fileID: 0}

@@ -42,7 +42,7 @@ public class PlayerBullet : BulletBase
                 enemy.TakeDamage(1f); // Adjust damage as needed
             }
             // Destroy the bullet upon hitting an enemy
-            Destroy(gameObject);
+            ReturnToPool();
         }
     }
 }

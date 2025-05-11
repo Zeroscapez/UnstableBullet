@@ -12,7 +12,7 @@ public class Enemy : MonoBehaviour
 
     
 
-    protected virtual void Start()
+    public virtual void Start()
     {
         // Initialize health
         currentHealth = maxHealth;

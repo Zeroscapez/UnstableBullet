@@ -1,51 +1,90 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion }
+
 public class BulletSpawner : MonoBehaviour
 {
-    
-
     [Header("Bullet Prefab")]
     public GameObject bulletPrefab;
-    public float bulletLife;
+    public float bulletLife = 5f;
     public float speed;
 
     [Header("Spawn Attributes")]
-    [SerializeField] public List<SpawnerType> activePatterns = new List<SpawnerType>(); // List of active patterns
+    [SerializeField] public List<SpawnerType> activePatterns = new List<SpawnerType>();
     [SerializeField] public float firingRate = 1f;
-    [SerializeField] public int bulletCount = 5; // Number of bullets for patterns like Fan, Burst, or Explosion
-    [SerializeField] public float spreadAngle = 45f; // Spread angle for Fan or Arc patterns
-    [SerializeField] public float waveFrequency = 1f; // Frequency for Wave pattern
-    [SerializeField] public float waveAmplitude = 1f; // Amplitude for Wave pattern
-    [SerializeField] public float spiralRotationSpeed = 10f; // Speed of rotation for Spiral pattern
+    [SerializeField] public int bulletCount = 5;
+    [SerializeField] public float spreadAngle = 45f;
+    [SerializeField] public float waveFrequency = 1f;
+    [SerializeField] public float waveAmplitude = 1f;
+    [SerializeField] public float spiralRotationSpeed = 10f;
 
     [Header("Rotation Settings")]
-    public bool rotateSpawner = false; // Enable/disable spawner rotation
-    public float rotationSpeed = 1f; // Speed of spawner rotation
+    public bool rotateSpawner = false;
+    public float rotationSpeed = 1f;
 
     [Header("Targeting")]
-    public Transform target; // Target to aim at (e.g., the player)
-    public bool targetPlayer = false; // Enable targeting for all patterns
+    public Transform target;
+
+    [Header("Homing Settings")]
+    public bool enableHoming = false;
 
     private float timer = 0f;
 
-    public void Start()
+    private Queue<GameObject> bulletPool;
+    public int poolSize;
+    public int maxPoolSize = 100;
+    public Transform bulletOwner;
+
+    private void Start()
     {
-        // Register the bullet prefab with the pool manager
-        BulletPoolManager.Instance.RegisterBulletPrefab(bulletPrefab, 20, this.transform);
+        target = LevelManager.Instance.playerController.transform;
+        bulletOwner = this.transform;
+        poolSize = bulletCount * 2;
+        InitializePool();
     }
 
-    void FixedUpdate()
+    private void InitializePool()
+    {
+        bulletPool = new Queue<GameObject>(poolSize);
+        for (int i = 0; i < poolSize; i++)
+        {
+            GameObject bullet = Instantiate(bulletPrefab, bulletOwner);
+            bullet.SetActive(false);
+            bullet.GetComponent<BulletBase>().poolOwner = this;
+            bulletPool.Enqueue(bullet);
+        }
+    }
+
+    private GameObject GetBullet()
+    {
+        if (bulletPool.Count > 0)
+        {
+            GameObject bullet = bulletPool.Dequeue();
+            bullet.SetActive(true);
+            return bullet;
+        }
+        else
+        {
+            // Optionally expand the pool if needed
+            GameObject bullet = Instantiate(bulletPrefab,bulletOwner);
+            bullet.GetComponent<BulletBase>().poolOwner = this;
+            return bullet;
+        }
+    }
+
+    public void ReturnBulletToPool(GameObject bullet)
+    {
+        bullet.SetActive(false);
+        bulletPool.Enqueue(bullet);
+    }
+
+    private void Update()
     {
         timer += Time.deltaTime;
 
-        // Rotate the spawner if enabled
         if (rotateSpawner)
-        {
             transform.Rotate(0, 0, rotationSpeed * Time.deltaTime);
-        }
 
         if (timer >= firingRate)
         {
@@ -58,61 +97,31 @@ public class BulletSpawner : MonoBehaviour
     {
         if (!bulletPrefab) return;
 
-        // If targeting is enabled, aim at the target
-        if (targetPlayer && target != null)
-        {
-            Vector2 direction = target.position - transform.position;
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, 0, angle);
-        }
-
-        // Iterate through all active patterns and fire bullets for each
         foreach (SpawnerType pattern in activePatterns)
         {
             switch (pattern)
             {
-                case SpawnerType.Straight:
-                    SpawnBullet(transform.rotation);
-                    break;
-
-                case SpawnerType.Fan:
-                    FireFanPattern();
-                    break;
-
-                case SpawnerType.Wave:
-                    FireWavePattern();
-                    break;
-
-                case SpawnerType.Burst:
-                    FireBurstPattern();
-                    break;
-
-                case SpawnerType.Random:
-                    FireRandomPattern();
-                    break;
-
-                case SpawnerType.Spin:
-                    FireSpinPattern();
-                    break;
-
-                case SpawnerType.Spiral:
-                    FireSpiralPattern();
-                    break;
-
-                case SpawnerType.Arc:
-                    FireArcPattern();
-                    break;
-
-                case SpawnerType.Explosion:
-                    FireExplosionPattern();
-                    break;
+                case SpawnerType.Straight: SpawnBullet(transform.rotation); break;
+                case SpawnerType.Fan: FireFanPattern(); break;
+                case SpawnerType.Wave: FireWavePattern(); break;
+                case SpawnerType.Burst: FireBurstPattern(); break;
+                case SpawnerType.Random: FireRandomPattern(); break;
+                case SpawnerType.Spin: FireSpinPattern(); break;
+                case SpawnerType.Spiral: FireSpiralPattern(); break;
+                case SpawnerType.Arc: FireArcPattern(); break;
+                case SpawnerType.Explosion: FireExplosionPattern(); break;
             }
         }
     }
 
+
+
+
+
+    // Update your SpawnBullet method:
     private void SpawnBullet(Quaternion rotation)
     {
-        GameObject bullet = BulletPoolManager.Instance.GetBullet(bulletPrefab);
+        GameObject bullet = GetBullet();
         bullet.transform.position = transform.position;
         bullet.transform.rotation = rotation;
 
@@ -121,15 +130,18 @@ public class BulletSpawner : MonoBehaviour
         {
             bulletScript.speed = speed;
             bulletScript.bulletLife = bulletLife;
-            bulletScript.bulletPrefab = bulletPrefab; // Set the prefab reference
+            bulletScript.poolOwner = this;
+            bulletScript.isHoming = enableHoming;
+            bulletScript.target = target;
+            
         }
     }
 
+    // Pattern Implementations
     private void FireFanPattern()
     {
         float angleStep = spreadAngle / (bulletCount - 1);
         float startAngle = -spreadAngle / 2;
-
         for (int i = 0; i < bulletCount; i++)
         {
             float angle = startAngle + (i * angleStep);
@@ -140,9 +152,8 @@ public class BulletSpawner : MonoBehaviour
 
     private void FireWavePattern()
     {
-        float baseAngle = transform.eulerAngles.z; 
-        float waveOffset = Mathf.Sin(Time.time * waveFrequency) * waveAmplitude;
-        Quaternion rotation = Quaternion.Euler(0, 0, baseAngle + waveOffset);
+        float offset = Mathf.Sin(Time.time * waveFrequency) * waveAmplitude;
+        Quaternion rotation = Quaternion.Euler(0, 0, transform.eulerAngles.z + offset);
         SpawnBullet(rotation);
     }
 
@@ -164,7 +175,6 @@ public class BulletSpawner : MonoBehaviour
     {
         float angleStep = spreadAngle / (bulletCount - 1);
         float startAngle = -spreadAngle / 2;
-
         for (int i = 0; i < bulletCount; i++)
         {
             float angle = startAngle + (i * angleStep);
@@ -176,7 +186,6 @@ public class BulletSpawner : MonoBehaviour
     private void FireExplosionPattern()
     {
         float angleStep = 360f / bulletCount;
-
         for (int i = 0; i < bulletCount; i++)
         {
             float angle = transform.eulerAngles.z + (i * angleStep);
@@ -187,8 +196,8 @@ public class BulletSpawner : MonoBehaviour
 
     private void FireRandomPattern()
     {
-        float randomAngle = transform.eulerAngles.z + Random.Range(-180f, 180f);
-        Quaternion rotation = Quaternion.Euler(0, 0, randomAngle);
+        float angle = transform.eulerAngles.z + Random.Range(-180f, 180f);
+        Quaternion rotation = Quaternion.Euler(0, 0, angle);
         SpawnBullet(rotation);
     }
 

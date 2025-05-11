@@ -58,6 +58,6 @@ public class PlayerGrazeCheck : MonoBehaviour
         PlayerScoreManager.Instance.AddDisrupt(grazeScoreValue);
         PlayerScoreManager.Instance.AddScore(5000);
 
-        Debug.Log("Grazing points awarded for bullet: " + bullet.name);
+        //Debug.Log("Grazing points awarded for bullet: " + bullet.name);
     }
 }

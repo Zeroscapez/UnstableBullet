@@ -15,12 +15,17 @@ public class PlayerController : MonoBehaviour
     public Transform fireOrigin;
     public GameObject bulletPrefab;
     public int playerBulletPoolSize = 20;
+    public GameObject pauseMenu;
+    public GameObject instantiatedPauseMenu;
+
+    public bool isPaused = false; // Flag to check if the game is paused
 
     public int grazeScore = 1000; // Score for grazing an enemy bullet
 
     PlayerControls controls;
-   
-    
+
+    // Private pool for player bullets
+    private Queue<GameObject> playerBulletPool = new Queue<GameObject>();
     public float fireRate = 0.2f; //Gap between shots firing
     public bool isFiring;
   
@@ -40,12 +45,83 @@ public class PlayerController : MonoBehaviour
         controls.Player.Fire.performed += ctx => StartFiring();
         // Stop firing when the fire button is released
         controls.Player.Fire.canceled += ctx => StopFiring();
+
+        controls.Player.Pause.performed += ctx =>
+        {
+            if (isPaused)
+            {
+                // Unpause the game
+                Time.timeScale = 1f;
+                isPaused = false;
+
+                // Destroy the instantiated pause menu
+                if (instantiatedPauseMenu != null)
+                {
+                    instantiatedPauseMenu.SetActive(false); // Hide the pause menu
+                }
+            }
+            else
+            {
+                if (instantiatedPauseMenu == null)
+                {
+                    // Instantiate the pause menu if it doesn't already exist
+                    instantiatedPauseMenu = Instantiate(pauseMenu, Vector3.zero, Quaternion.identity);
+                }
+                else
+                {
+                    // Show the existing pause menu
+                    instantiatedPauseMenu.SetActive(true);
+                }
+
+                // Pause the game
+                Time.timeScale = 0f;
+                isPaused = true;
+            }
+        };
     }
 
-   private void Start()
+    private void Start()
     {
-        // Register the player's bullet prefab with the pool manager
-        BulletPoolManager.Instance.RegisterBulletPrefab(bulletPrefab, playerBulletPoolSize, this.transform);
+        // Initialize the player's bullet pool
+        InitializePlayerBulletPool();
+    }
+
+    private void InitializePlayerBulletPool()
+    {
+        if (bulletPrefab == null)
+        {
+            Debug.LogError("Bullet prefab is not assigned in the PlayerController!");
+            return;
+        }
+
+        for (int i = 0; i < playerBulletPoolSize; i++)
+        {
+            GameObject bullet = Instantiate(bulletPrefab);
+            bullet.SetActive(false);
+            playerBulletPool.Enqueue(bullet);
+        }
+    }
+
+    private GameObject GetBulletFromPool()
+    {
+        if (playerBulletPool.Count > 0)
+        {
+            GameObject bullet = playerBulletPool.Dequeue();
+            bullet.SetActive(true);
+            return bullet;
+        }
+        else
+        {
+            Debug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
+            GameObject bullet = Instantiate(bulletPrefab);
+            return bullet;
+        }
+    }
+
+    public void ReturnBulletToPool(GameObject bullet)
+    {
+        bullet.SetActive(false);
+        playerBulletPool.Enqueue(bullet);
     }
 
     private void OnEnable()
@@ -73,26 +149,22 @@ public class PlayerController : MonoBehaviour
         transform.position = newPosition;
     }
 
-    void Fire()
+    private void Fire()
     {
         if (bulletPrefab != null && fireOrigin != null)
         {
             // Get a bullet from the pool
-            GameObject bullet = BulletPoolManager.Instance.GetBullet(bulletPrefab);
+            GameObject bullet = GetBulletFromPool();
 
             // Set the bullet's position and rotation to match the fireOrigin
             bullet.transform.position = fireOrigin.position;
             bullet.transform.rotation = fireOrigin.rotation;
 
-            // Get the PlayerBullet script and set the prefab reference
-            PlayerBullet bulletScript = bullet.GetComponent<PlayerBullet>();
+            // Set the bullet's pool owner
+            BulletBase bulletScript = bullet.GetComponent<BulletBase>();
             if (bulletScript != null)
             {
-                bulletScript.bulletPrefab = bulletPrefab; // Set the prefab reference
-            }
-            else
-            {
-                Debug.LogError("PlayerBullet script not found on bulletPrefab!");
+             
             }
 
             // Set the bullet's velocity
@@ -105,6 +177,8 @@ public class PlayerController : MonoBehaviour
             {
                 Debug.LogError("Rigidbody2D not found on bulletPrefab!");
             }
+
+          
         }
     }
 
