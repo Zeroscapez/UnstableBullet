@@ -9,7 +9,7 @@ public class PlayerGrazeCheck : MonoBehaviour
     [Header("References")]
     public Transform playerCenter;    // assign the root Player Transform
     public float hitboxRadius = 0.3f; // match your Hurtbox collider radius
-
+    public CircleCollider2D hitbox; // assign the Hurtbox collider
     [Header("Graze Settings")]
     public int grazeScoreValue = 10;
     public LayerMask bulletLayer;
@@ -17,6 +17,15 @@ public class PlayerGrazeCheck : MonoBehaviour
     // Track bullets currently inside the graze trigger
     public HashSet<EnemyBullet> bulletsInRange = new HashSet<EnemyBullet>();
 
+    private void Awake()
+    {
+        hitboxRadius = hitbox.radius;
+    }
+
+    private void Start()
+    {
+        hitboxRadius = hitbox.radius;
+    }
     private void OnTriggerEnter2D(Collider2D col)
     {
    

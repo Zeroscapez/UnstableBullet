@@ -55,6 +55,12 @@ TagManager:
   - name: Bullets
     uniqueID: 332214037
     locked: 0
+  - name: Effects
+    uniqueID: 3235797353
+    locked: 0
   - name: Bounds
     uniqueID: 2253370753
+    locked: 0
+  - name: COOL
+    uniqueID: 1542467045
     locked: 0

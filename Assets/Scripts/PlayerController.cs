@@ -19,6 +19,11 @@ public class PlayerController : MonoBehaviour
     public int playerBulletPoolSize = 20;
     public GameObject pauseMenu;
     public GameObject instantiatedPauseMenu;
+    public Sprite defaultPlayer;
+    public Sprite distortPlayer;
+    public GameObject distortedOverlay;
+
+ 
 
     public bool isPaused = false; // Flag to check if the game is paused
 
@@ -38,7 +43,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         controls = new PlayerControls();
-
+        distortedOverlay.SetActive(false);
         // Bind the movement actions to the Move method
         controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
@@ -48,14 +53,14 @@ public class PlayerController : MonoBehaviour
         // Stop firing when the fire button is released
         controls.Player.Fire.canceled += ctx => StopFiring();
 
-        controls.Player.Pause.performed += ctx =>
+        controls.Menu.Pause.performed += ctx =>
         {
             if (isPaused)
             {
                 // Unpause the game
                 Time.timeScale = 1f;
                 isPaused = false;
-
+                controls.Player.Enable(); // Re-enable player controls
                 // Destroy the instantiated pause menu
                 if (instantiatedPauseMenu != null)
                 {
@@ -77,7 +82,9 @@ public class PlayerController : MonoBehaviour
 
                 // Pause the game
                 Time.timeScale = 0f;
+                controls.Player.Disable();
                 isPaused = true;
+               
             }
         };
 
@@ -94,6 +101,9 @@ public class PlayerController : MonoBehaviour
         controls.Player.Distort.performed += ctx => Distort();
 
         controls.Player.Distort.canceled += ctx => StopDistort();
+
+        this.gameObject.GetComponent<SpriteRenderer>().sprite = defaultPlayer; // Set the default sprite
+
     }
 
     private void Start()
@@ -106,7 +116,8 @@ public class PlayerController : MonoBehaviour
     {
         grazeBox.enabled = false;
         playerHitbox.enabled = false;
-
+        distortedOverlay.SetActive(true); // Activate the distorted overlay
+        this.gameObject.GetComponent<SpriteRenderer>().sprite = distortPlayer; // Set the distorted sprite
         Debug.Log("Distorting");
     }
 
@@ -114,7 +125,8 @@ public class PlayerController : MonoBehaviour
     {
         grazeBox.enabled = true;
         playerHitbox.enabled = true;
-
+        distortedOverlay.SetActive(false);
+        this.gameObject.GetComponent<SpriteRenderer>().sprite = defaultPlayer; // Set the default sprite
         Debug.Log("Stop Distorting");
     }
 
@@ -210,6 +222,8 @@ public class PlayerController : MonoBehaviour
         newPosition.y = Mathf.Clamp(newPosition.y, PlayAreaManager.Instance.MinY, PlayAreaManager.Instance.MaxY);
 
         transform.position = newPosition;
+
+        
     }
 
     private void Fire()

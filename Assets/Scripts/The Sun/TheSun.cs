@@ -65,8 +65,8 @@ public class TheSun : Enemy
          spawner1 =  Instantiate(spawnerPrefab, leftMiddlePosition, Quaternion.Euler(0, 0, 0));
          spawner2 = Instantiate(spawnerPrefab, rightMiddlePosition, Quaternion.Euler(0, 0, 180));
         
-        ConfigureSpawner(spawner1, SpawnerType.Straight, 4f, 2f, 20f, true);
-        ConfigureSpawner(spawner2, SpawnerType.Straight, 4f,2f, 20f, true);
+        ConfigureSpawner(spawner1, SpawnerType.Straight, 4f, 2f, 20f, false);
+        ConfigureSpawner(spawner2, SpawnerType.Straight, 4f,2f, 20f, false);
         Debug.Log(maxHealth * 0.9);
 
         

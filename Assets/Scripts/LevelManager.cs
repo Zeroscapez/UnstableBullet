@@ -32,7 +32,7 @@ public class LevelManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        timer = Time.realtimeSinceStartup;
-        timerText.text = timer.ToString("F2");
+        timer = Time.timeSinceLevelLoad;
+        timerText.text = timer.ToString("F0");
     }
 }
