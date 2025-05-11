@@ -28,9 +28,14 @@ public abstract class BulletBase : MonoBehaviour
     {
         timer += Time.deltaTime;
 
-       
+        if (isHoming && target != null)
+        {
+            HomeOntoTarget();
+        }
+        else
+        {
             MoveStraight();
-        
+        }
 
         if (timer >= bulletLife)
         {

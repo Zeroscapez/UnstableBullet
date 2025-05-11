@@ -14,6 +14,8 @@ public class PlayerController : MonoBehaviour
     [Header("Settings")]
     public Transform fireOrigin;
     public GameObject bulletPrefab;
+    public Collider2D playerHitbox;
+    public Collider2D grazeBox;
     public int playerBulletPoolSize = 20;
     public GameObject pauseMenu;
     public GameObject instantiatedPauseMenu;
@@ -78,6 +80,20 @@ public class PlayerController : MonoBehaviour
                 isPaused = true;
             }
         };
+
+        controls.Player.Bomb.performed += ctx =>
+        {
+            if(PlayerScoreManager.Instance.disrupt >= 100)
+            {
+                GigaCrash();
+                
+            }
+           
+        };
+
+        controls.Player.Distort.performed += ctx => Distort();
+
+        controls.Player.Distort.canceled += ctx => StopDistort();
     }
 
     private void Start()
@@ -86,6 +102,53 @@ public class PlayerController : MonoBehaviour
         InitializePlayerBulletPool();
     }
 
+    private void Distort()
+    {
+        grazeBox.enabled = false;
+        playerHitbox.enabled = false;
+
+        Debug.Log("Distorting");
+    }
+
+    private void StopDistort()
+    {
+        grazeBox.enabled = true;
+        playerHitbox.enabled = true;
+
+        Debug.Log("Stop Distorting");
+    }
+
+
+    private void GigaCrash()
+    {
+        EnemyBullet[] enemyBullets = FindObjectsOfType<EnemyBullet>();
+
+        int bulletsCleared = 0;
+        int pointsgained = 500;
+
+        if(PlayerScoreManager.Instance.disrupt >= 100)
+        {
+            foreach (EnemyBullet bullet in enemyBullets)
+            {
+                // Destroy or return the bullet to its pool
+                if (bullet != null)
+                {
+                    bullet.ReturnToPool(); // Assuming EnemyBullet inherits from BulletBase
+                    bulletsCleared++;
+                }
+            }
+            PlayerScoreManager.Instance.ResetDisrupt();
+            PlayerScoreManager.Instance.AddScore(bulletsCleared * pointsgained);
+            
+            Debug.Log($"Cleared {bulletsCleared} bullets and awarded {bulletsCleared * pointsgained} points.");
+
+        }
+
+
+
+
+
+    }
     private void InitializePlayerBulletPool()
     {
         if (bulletPrefab == null)

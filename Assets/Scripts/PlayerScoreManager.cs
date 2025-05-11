@@ -13,7 +13,7 @@ public class PlayerScoreManager : MonoBehaviour
 
     public int highScore { get; private set; }
     public TextMeshProUGUI highScoreText;
-    public int disrupt { get; private set; }
+    public int disrupt;
     public TextMeshProUGUI disruptText;
     public int maxDisrupt = 999;
     private bool isPlayerAlive = true; // Track if the player is alive
@@ -29,6 +29,8 @@ public class PlayerScoreManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        IntitializeScores();
     }
     private void OnEnable()
     {
@@ -43,12 +45,19 @@ public class PlayerScoreManager : MonoBehaviour
 
     void Start()
     {
-       
+        IntitializeScores();
+    }
+
+    private void FixedUpdate()
+    {
+        
     }
 
     public void AddScore(int amount)
     {
         score += amount;
+
+        score = Mathf.Clamp(score, 0, 9999999); 
 
         if (score > highScore)
         {
@@ -64,18 +73,28 @@ public class PlayerScoreManager : MonoBehaviour
        
         disrupt = Mathf.Clamp(disrupt, 0, maxDisrupt);
 
-
+        UpdateScoreText();
     }
 
     public void ResetDisrupt()
     {
         disrupt = 0;
+
+        UpdateScoreText();
     }
 
     // Update is called once per frame
     void Update()
     {
         
+    }
+
+    private void IntitializeScores()
+    {
+        score = 0;
+        highScore = 0;
+        disrupt = 0;
+        UpdateScoreText();
     }
 
 
