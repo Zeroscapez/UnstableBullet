@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.UI;
+using Image = UnityEngine.UI.Image;
+
 
 public enum TheSunBossState
 {
@@ -20,6 +23,7 @@ public class TheSun : Enemy
 
     [Header("Boss Settings")]
     public Transform player;
+    public GameObject idolHPBar;
 
 
     [Header("Movement Settings")]
@@ -59,12 +63,26 @@ public class TheSun : Enemy
 
     private void Update()
     {
+        Image idol;
+
+        if (idolHPBar != null)
+        {
+            idol = idolHPBar.transform.GetChild(0).GetComponent<Image>();
+            idol.fillAmount = currentHealth / maxHealth;
+        }
+        else
+        {
+            Debug.LogWarning("Idol HP Bar is not assigned in the inspector.");
+        }
+       
         DebugMode = PlayerScoreManager.Instance.DebugMode;
         if (DebugMode)
         {
             
             Debug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
         }
+        
+
 
         fightTimer = LevelManager.Instance.timer;
 
@@ -363,13 +381,23 @@ public class TheSun : Enemy
         // Wait for the delay
         yield return new WaitForSeconds(spawnerDelay);
 
+        if (spawner == null)
+            yield break;
+
+
         // Enable the spawner's firing behavior
-        BulletSpawner spawnerScript = spawner.GetComponent<BulletSpawner>();
-        if (spawnerScript != null)
+        if (spawner != null)
         {
-            spawnerScript.enabled = true;
+            BulletSpawner spawnerScript = spawner.GetComponent<BulletSpawner>();
+            if (spawnerScript != null)
+            {
+                spawnerScript.enabled = true;
+            }
         }
     }
+
+
+
 
     public override void TakeDamage(float damage)
     {
@@ -381,10 +409,15 @@ public class TheSun : Enemy
 
     protected override void Die()
     {
-        base.Die();
-
+        
+        DestroySpawners(phase1Spawners);
+        DestroySpawners(phase2Spawners);
+        DestroySpawners(phase3Spawners);
+        PlayerScoreManager.Instance.AddScore(10000);
+        PlayerScoreManager.Instance.CalculateScore();
         // Additional logic for boss death
         Debug.Log("Boss defeated! Triggering level end...");
+        base.Die();
     }
 
     private void DestroySpawners(List<GameObject> spawnerList)

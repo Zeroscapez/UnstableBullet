@@ -24,6 +24,8 @@ public class PlayerScoreManager : MonoBehaviour
     public Transform sigilIconContainer; // Parent transform in UI to hold instantiated sigils
     public List<GameObject> sigilIcon = new();
 
+    public GameObject winScreenPrefab;
+    private GameObject winScreenInstance;
 
     [Header("Life UI")]
     public int lives = 12;
@@ -293,6 +295,14 @@ public class PlayerScoreManager : MonoBehaviour
         highScore = score;
         SceneManager.LoadScene("MainMenu");
         IntitializeScores();
+    }
+
+    public void CalculateScore()
+    {
+        if (winScreenInstance == null && winScreenPrefab != null)
+        {
+            winScreenInstance = Instantiate(winScreenPrefab, Vector3.zero, Quaternion.identity);
+        }
     }
 
 
