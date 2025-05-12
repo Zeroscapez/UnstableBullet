@@ -23,7 +23,12 @@ public class PlayerController : MonoBehaviour
     public Sprite distortPlayer;
     public GameObject distortedOverlay;
 
- 
+
+    [Header("Sounds")]
+    public AudioSource audio;
+    public AudioClip distortSound;
+
+
 
     public bool isPaused = false; // Flag to check if the game is paused
 
@@ -133,6 +138,7 @@ public class PlayerController : MonoBehaviour
         playerHitbox.enabled = false;
         PlayerScoreManager.Instance.AddScore(-1000); // Deduct 1000 points for distorting
         distortedOverlay.SetActive(true); // Activate the distorted overlay
+        audio.PlayOneShot(distortSound); // Play the distortion sound
         isDistort = true;
         this.gameObject.GetComponent<SpriteRenderer>().sprite = distortPlayer; // Set the distorted sprite
         controls.Player.Fire.Disable(); //Disable firing
@@ -186,7 +192,7 @@ public class PlayerController : MonoBehaviour
     {
         if (bulletPrefab == null)
         {
-            Debug.LogError("Bullet prefab is not assigned in the PlayerController!");
+           // Debug.LogError("Bullet prefab is not assigned in the PlayerController!");
             return;
         }
 
@@ -208,7 +214,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
+            //Debug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
             GameObject bullet = Instantiate(bulletPrefab);
             return bullet;
         }

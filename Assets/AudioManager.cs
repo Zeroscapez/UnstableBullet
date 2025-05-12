@@ -1,18 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class AudioManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public AudioMixer mixer;
+
+    public void SetMusicVolume(float volume)
     {
-        
+        mixer.SetFloat("MusicVolume", Mathf.Log10(volume) * 20);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SetSFXVolume(float volume)
     {
-        
+        mixer.SetFloat("SFXVolume", Mathf.Log10(volume) * 20);
     }
 }

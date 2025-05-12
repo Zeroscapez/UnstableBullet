@@ -447,7 +447,6 @@ GameObject:
   - component: {fileID: 2582842182418000329}
   - component: {fileID: 2315093115076442218}
   - component: {fileID: 8783224674933003162}
-  - component: {fileID: 5598719464202125892}
   - component: {fileID: 2857766683451493316}
   m_Layer: 5
   m_Name: Game Win Screen
@@ -542,18 +541,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &5598719464202125892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3609562887664921944}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f5fca760b65aa349893bafcad808d1a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2857766683451493316
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -7,6 +7,7 @@ using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 using System;
 using UnityEngine.SceneManagement;
+using JetBrains.Annotations;
 
 public class PlayerScoreManager : MonoBehaviour
 {
@@ -26,6 +27,9 @@ public class PlayerScoreManager : MonoBehaviour
 
     public GameObject winScreenPrefab;
     private GameObject winScreenInstance;
+
+    public GameObject gameOverPrefab;
+    private GameObject gameOverInstance;
 
     [Header("Life UI")]
     public int lives = 12;
@@ -293,8 +297,16 @@ public class PlayerScoreManager : MonoBehaviour
         // Stop the score increment when the player dies
         isPlayerAlive = false;
         highScore = score;
-        SceneManager.LoadScene("MainMenu");
-        IntitializeScores();
+
+        if(gameOverInstance == null && gameOverPrefab != null)
+        {
+            gameOverInstance = Instantiate(gameOverPrefab, Vector3.zero, Quaternion.identity);
+        }
+
+        
+
+        
+        
     }
 
     public void CalculateScore()
