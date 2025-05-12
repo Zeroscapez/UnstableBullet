@@ -49,7 +49,7 @@ public class BulletSpawner : MonoBehaviour
         bulletPool = new Queue<GameObject>(poolSize);
         for (int i = 0; i < poolSize; i++)
         {
-            GameObject bullet = Instantiate(bulletPrefab, bulletOwner);
+            GameObject bullet = Instantiate(bulletPrefab);
             bullet.SetActive(false);
             bullet.GetComponent<BulletBase>().poolOwner = this;
             bulletPool.Enqueue(bullet);
@@ -67,7 +67,7 @@ public class BulletSpawner : MonoBehaviour
         else
         {
             // Optionally expand the pool if needed
-            GameObject bullet = Instantiate(bulletPrefab,bulletOwner);
+            GameObject bullet = Instantiate(bulletPrefab);
             bullet.GetComponent<BulletBase>().poolOwner = this;
             return bullet;
         }

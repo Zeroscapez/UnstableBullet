@@ -39,7 +39,8 @@ public class PlayerBullet : BulletBase
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.TakeDamage(1f); // Adjust damage as needed
+                enemy.TakeDamage(90f); // Adjust damage as needed
+                PlayerScoreManager.Instance.AddScore(100);
             }
             // Destroy the bullet upon hitting an enemy
             ReturnToPool();

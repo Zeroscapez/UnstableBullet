@@ -34,7 +34,8 @@ public class PlayerController : MonoBehaviour
     // Private pool for player bullets
     private Queue<GameObject> playerBulletPool = new Queue<GameObject>();
     public float fireRate = 0.2f; //Gap between shots firing
-    public bool isFiring;
+    public bool autoFire = true;
+    [SerializeField] private bool isDistort = false;
   
     private Coroutine firingCoroutine;
 
@@ -48,10 +49,20 @@ public class PlayerController : MonoBehaviour
         controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
-        // Start firing when the fire button is pressed
-        controls.Player.Fire.performed += ctx => StartFiring();
-        // Stop firing when the fire button is released
-        controls.Player.Fire.canceled += ctx => StopFiring();
+        autoFire = true;
+        if (autoFire)
+        {
+            // Start firing automatically
+            StartFiring();
+        }
+        else if (!autoFire && !isDistort)
+        {
+            // Start firing when the fire button is pressed
+            controls.Player.Fire.performed += ctx => StartFiring();
+            // Stop firing when the fire button is released
+            controls.Player.Fire.canceled += ctx => StopFiring();
+        }
+
 
         controls.Menu.Pause.performed += ctx =>
         {
@@ -90,7 +101,7 @@ public class PlayerController : MonoBehaviour
 
         controls.Player.Bomb.performed += ctx =>
         {
-            if(PlayerScoreManager.Instance.disrupt >= 100)
+            if (PlayerScoreManager.Instance.sigils >= 1)
             {
                 GigaCrash();
                 
@@ -108,16 +119,23 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        
         // Initialize the player's bullet pool
         InitializePlayerBulletPool();
+
+       
     }
 
     private void Distort()
     {
+
         grazeBox.enabled = false;
         playerHitbox.enabled = false;
+        PlayerScoreManager.Instance.AddScore(-1000); // Deduct 1000 points for distorting
         distortedOverlay.SetActive(true); // Activate the distorted overlay
+        isDistort = true;
         this.gameObject.GetComponent<SpriteRenderer>().sprite = distortPlayer; // Set the distorted sprite
+        controls.Player.Fire.Disable(); //Disable firing
         Debug.Log("Distorting");
     }
 
@@ -126,7 +144,9 @@ public class PlayerController : MonoBehaviour
         grazeBox.enabled = true;
         playerHitbox.enabled = true;
         distortedOverlay.SetActive(false);
+        isDistort = false;
         this.gameObject.GetComponent<SpriteRenderer>().sprite = defaultPlayer; // Set the default sprite
+        controls.Player.Fire.Enable(); // Re-enable firing
         Debug.Log("Stop Distorting");
     }
 
@@ -138,8 +158,9 @@ public class PlayerController : MonoBehaviour
         int bulletsCleared = 0;
         int pointsgained = 500;
 
-        if(PlayerScoreManager.Instance.disrupt >= 100)
+        if(PlayerScoreManager.Instance.sigils >= 1)
         {
+            PlayerScoreManager.Instance.RemoveSigil();
             foreach (EnemyBullet bullet in enemyBullets)
             {
                 // Destroy or return the bullet to its pool
@@ -149,7 +170,7 @@ public class PlayerController : MonoBehaviour
                     bulletsCleared++;
                 }
             }
-            PlayerScoreManager.Instance.ResetDisrupt();
+           
             PlayerScoreManager.Instance.AddScore(bulletsCleared * pointsgained);
             
             Debug.Log($"Cleared {bulletsCleared} bullets and awarded {bulletsCleared * pointsgained} points.");
@@ -214,7 +235,25 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 delta = new Vector3(moveInput.x, moveInput.y, 0) * moveSpeed * Time.deltaTime;
+        if (autoFire && !isDistort)
+        {
+            // Start firing automatically
+            StartFiring();
+        }
+        else if (!autoFire && !isDistort)
+        {
+            Debug.Log("Manual Fire");
+            // Start firing when the fire button is pressed
+            controls.Player.Fire.performed += ctx => StartFiring();
+            // Stop firing when the fire button is released
+            controls.Player.Fire.canceled += ctx => StopFiring();
+        }
+        else
+        {
+            StopFiring();
+        }
+
+            Vector3 delta = new Vector3(moveInput.x, moveInput.y, 0) * moveSpeed * Time.deltaTime;
         Vector3 newPosition = transform.position + delta;
 
         // Clamp the position using PlayAreaManager

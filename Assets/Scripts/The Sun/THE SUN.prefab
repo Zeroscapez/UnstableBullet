@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 679519395919618621}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.56, y: -0.332, z: 0}
+  m_LocalPosition: {x: 1.65, y: 0.05, z: 0}
   m_LocalScale: {x: 0.3119188, y: 0.28705415, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -245,7 +245,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1618026971
   m_SortingLayer: 3
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: e579ec232ec6b734eb00ddd0497d5147, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -269,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 483cd566363857245bbb4c51e7ffd08f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 8000
+  maxHealth: 100000
   currentHealth: 0
   scoreValue: 100
   spawnerPrefab: {fileID: 524198409138185429, guid: 8bff992ca125d8546913ba19848cec5c, type: 3}
@@ -277,11 +277,17 @@ MonoBehaviour:
   spawnerDelay: 2
   leftHand: {fileID: 8119548227308839672}
   rightHand: {fileID: 7057986679315184332}
+  centerOfSun: {fileID: 4570667609792711192}
+  centerOfBounds: {fileID: 0}
   player: {fileID: 0}
+  bossMoveSpeed: 1
+  moveInterval: 3
   currentState: 0
   fightTimer: 0
-  phase2HP: 75
+  phase2P1HP: 0
+  phase2P2HP: 0
   phase3HP: 50
+  DebugMode: 0
 --- !u!58 &6600740771296167970
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -343,7 +349,7 @@ Transform:
   m_GameObject: {fileID: 8089511517649450930}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.56, y: -0.332, z: 0}
+  m_LocalPosition: {x: -1.716, y: 0.132, z: 0}
   m_LocalScale: {x: 0.3119188, y: 0.28705415, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

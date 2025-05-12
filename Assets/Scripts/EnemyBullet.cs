@@ -20,6 +20,8 @@ public class EnemyBullet : BulletBase
      
             hasHitPlayer = true;
             PlayerScoreManager.Instance.AddScore(-100);
+          
+            PlayerScoreManager.Instance.TakeDamage(1);
             ReturnToPool();
         }
     }
