@@ -58,6 +58,9 @@ TagManager:
   - name: Effects
     uniqueID: 3235797353
     locked: 0
+  - name: BGArt
+    uniqueID: 2967370213
+    locked: 0
   - name: Bounds
     uniqueID: 2253370753
     locked: 0

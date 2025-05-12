@@ -150,7 +150,7 @@ public class TheSun : Enemy
               true, // Should Rotate
               30f, // Rotation Speed
               4f, // Speed
-              1f, // Spawn Delay
+              3f, // Spawn Delay
               20f, // Bullet Life
               false //shouldHome
                );
