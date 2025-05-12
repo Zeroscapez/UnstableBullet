@@ -60,16 +60,7 @@ public class PlayerScoreManager : MonoBehaviour
 
         IntitializeScores();
     }
-    private void OnEnable()
-    {
-        PlayerController.OnPlayerDied += HandlePlayerDeath;
-    }
-
-    private void OnDisable()
-    {
-        // Unsubscribe from the player death event
-        PlayerController.OnPlayerDied -= HandlePlayerDeath;
-    }
+    
 
     void Start()
     {
@@ -298,15 +289,16 @@ public class PlayerScoreManager : MonoBehaviour
         isPlayerAlive = false;
         highScore = score;
 
+        
         if(gameOverInstance == null && gameOverPrefab != null)
         {
             gameOverInstance = Instantiate(gameOverPrefab, Vector3.zero, Quaternion.identity);
         }
 
-        
+        Time.timeScale = 0f; // Pause the game
 
-        
-        
+
+
     }
 
     public void CalculateScore()

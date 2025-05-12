@@ -255,7 +255,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: -2444236831089106947}
+      - m_Target: {fileID: 2863508833141844420}
         m_TargetAssemblyTypeName: GameOverScreenControl, Assembly-CSharp
         m_MethodName: QuitButton
         m_Mode: 1
@@ -445,7 +445,7 @@ GameObject:
   - component: {fileID: 1312582606060561499}
   - component: {fileID: 1951849805069112399}
   - component: {fileID: 4991372882790528446}
-  - component: {fileID: -2444236831089106947}
+  - component: {fileID: 2863508833141844420}
   m_Layer: 5
   m_Name: GameOverScreen
   m_TagString: Untagged
@@ -537,7 +537,7 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &-2444236831089106947
+--- !u!114 &2863508833141844420
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
