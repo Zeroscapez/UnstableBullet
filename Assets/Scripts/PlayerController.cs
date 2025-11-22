@@ -293,7 +293,7 @@ public class PlayerController : MonoBehaviour
             Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
             if (rb != null)
             {
-                rb.velocity = fireOrigin.up * 10f; // Adjust speed as needed
+                rb.linearVelocity = fireOrigin.up * 10f; // Adjust speed as needed
             }
             else
             {
