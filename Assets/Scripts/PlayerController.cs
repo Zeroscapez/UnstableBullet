@@ -142,7 +142,7 @@ public class PlayerController : MonoBehaviour
         isDistort = true;
         this.gameObject.GetComponent<SpriteRenderer>().sprite = distortPlayer; // Set the distorted sprite
         controls.Player.Fire.Disable(); //Disable firing
-        Debug.Log("Distorting");
+        CustomDebug.Log("Distorting");
     }
 
     private void StopDistort()
@@ -153,7 +153,7 @@ public class PlayerController : MonoBehaviour
         isDistort = false;
         this.gameObject.GetComponent<SpriteRenderer>().sprite = defaultPlayer; // Set the default sprite
         controls.Player.Fire.Enable(); // Re-enable firing
-        Debug.Log("Stop Distorting");
+        CustomDebug.Log("Stop Distorting");
     }
 
 
@@ -179,7 +179,7 @@ public class PlayerController : MonoBehaviour
            
             PlayerScoreManager.Instance.AddScore(bulletsCleared * pointsgained);
             
-            Debug.Log($"Cleared {bulletsCleared} bullets and awarded {bulletsCleared * pointsgained} points.");
+            CustomDebug.Log($"Cleared {bulletsCleared} bullets and awarded {bulletsCleared * pointsgained} points.");
 
         }
 
@@ -192,7 +192,7 @@ public class PlayerController : MonoBehaviour
     {
         if (bulletPrefab == null)
         {
-           // Debug.LogError("Bullet prefab is not assigned in the PlayerController!");
+           // CustomDebug.LogError("Bullet prefab is not assigned in the PlayerController!");
             return;
         }
 
@@ -214,7 +214,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            //Debug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
+            //CustomDebug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
             GameObject bullet = Instantiate(bulletPrefab);
             return bullet;
         }
@@ -248,7 +248,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (!autoFire && !isDistort)
         {
-            Debug.Log("Manual Fire");
+            CustomDebug.Log("Manual Fire");
             // Start firing when the fire button is pressed
             controls.Player.Fire.performed += ctx => StartFiring();
             // Stop firing when the fire button is released
@@ -297,7 +297,7 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Rigidbody2D not found on bulletPrefab!");
+                CustomDebug.LogError("Rigidbody2D not found on bulletPrefab!");
             }
 
           

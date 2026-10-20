@@ -72,14 +72,14 @@ public class TheSun : Enemy
         }
         else
         {
-            Debug.LogWarning("Idol HP Bar is not assigned in the inspector.");
+            CustomDebug.LogWarning("Idol HP Bar is not assigned in the inspector.");
         }
        
         DebugMode = PlayerScoreManager.Instance.DebugMode;
         if (DebugMode)
         {
-            
-            Debug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
+
+            CustomDebug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
         }
         
 
@@ -130,7 +130,7 @@ public class TheSun : Enemy
         
         
         currentState = TheSunBossState.Phase1;
-        Debug.Log("The Sun Phase 1");
+        CustomDebug.Log("The Sun Phase 1");
 
 
         GameObject spawner5;
@@ -162,7 +162,7 @@ public class TheSun : Enemy
     {
         currentState = TheSunBossState.Phase2P1;
         DestroySpawners(phase1Spawners);
-        Debug.Log("The Sun Phase 2 Part 1");
+        CustomDebug.Log("The Sun Phase 2 Part 1");
 
         GameObject spawner1;
         GameObject spawner2;
@@ -220,8 +220,8 @@ public class TheSun : Enemy
     private void StartPhase2P2()
     {
         currentState = TheSunBossState.Phase2P2;
-        
-        Debug.Log("The Sun Phase 2 Part 2");
+
+       CustomDebug.Log("The Sun Phase 2 Part 2");
        
             
             GameObject spawner3;
@@ -281,7 +281,7 @@ public class TheSun : Enemy
         DestroySpawners(phase2Spawners);
         transform.position = originalPosition;
         currentState = TheSunBossState.Phase3;
-        Debug.Log("The Sun Phase 3");
+        CustomDebug.Log("The Sun Phase 3");
 
         GameObject spawner6;
         GameObject spawner7;
@@ -416,7 +416,7 @@ public class TheSun : Enemy
         PlayerScoreManager.Instance.AddScore(10000);
         PlayerScoreManager.Instance.CalculateScore();
         // Additional logic for boss death
-        Debug.Log("Boss defeated! Triggering level end...");
+        CustomDebug.Log("Boss defeated! Triggering level end...");
         base.Die();
     }
 

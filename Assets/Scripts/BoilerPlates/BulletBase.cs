@@ -85,7 +85,7 @@ public abstract class BulletBase : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"Pool owner not set for {gameObject.name}. Destroying the bullet.");
+            CustomDebug.LogWarning($"Pool owner not set for {gameObject.name}. Destroying the bullet.");
             Destroy(gameObject);
         }
     }

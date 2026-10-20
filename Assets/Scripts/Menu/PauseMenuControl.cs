@@ -12,7 +12,7 @@ public class PauseMenuControl : MonoBehaviour
 
         if (playerController == null)
         {
-            Debug.LogError("PlayerController not found in the scene!");
+            CustomDebug.LogError("PlayerController not found in the scene!");
         }
     }
 

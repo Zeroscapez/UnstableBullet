@@ -75,7 +75,7 @@ public class PlayerScoreManager : MonoBehaviour
     {
         if (DebugMode)
         {
-            Debug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
+            CustomDebug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
         }
 
 
@@ -107,7 +107,7 @@ public class PlayerScoreManager : MonoBehaviour
 
         if(disruptToBomb >= 100)
         {
-            Debug.Log("Added Sigil");
+            CustomDebug.Log("Added Sigil");
             AddSigil();
             disruptToBomb = 0;
         }

@@ -16,7 +16,7 @@ public class PlayerBullet : BulletBase
         }
         else
         {
-            Debug.LogError("Player not found in the scene!");
+            CustomDebug.LogError("Player not found in the scene!");
         }
     }
 
