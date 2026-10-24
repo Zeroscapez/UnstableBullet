@@ -3,7 +3,7 @@ using UnityEngine;
 
 public enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion }
 
-public class BulletSpawner : MonoBehaviour
+public class BulletSpawner : MonoBehaviour, IBulletPool
 {
     [Header("Bullet Prefab")]
     public GameObject bulletPrefab;

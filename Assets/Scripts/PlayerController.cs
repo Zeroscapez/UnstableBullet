@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IBulletPool
 {
     [Header("Movement")]
     Vector2 moveInput;
@@ -200,6 +200,7 @@ public class PlayerController : MonoBehaviour
         {
             GameObject bullet = Instantiate(bulletPrefab);
             bullet.SetActive(false);
+            bullet.GetComponent<BulletBase>().poolOwner = this;
             playerBulletPool.Enqueue(bullet);
         }
     }
@@ -216,6 +217,7 @@ public class PlayerController : MonoBehaviour
         {
             //CustomDebug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
             GameObject bullet = Instantiate(bulletPrefab);
+            bullet.GetComponent<BulletBase>().poolOwner = this;
             return bullet;
         }
     }

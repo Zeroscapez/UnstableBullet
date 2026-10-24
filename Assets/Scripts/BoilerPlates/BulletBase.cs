@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Anything that owns a bullet pool (BulletSpawner, PlayerController)
+public interface IBulletPool
+{
+    void ReturnBulletToPool(GameObject bullet);
+}
+
 public abstract class BulletBase : MonoBehaviour
 {
     public float bulletLife = 5f; // Time before bullet is destroyed    
@@ -11,7 +17,7 @@ public abstract class BulletBase : MonoBehaviour
     public Transform target; // Target to home onto (e.g., the player)
 
     [HideInInspector]
-    public BulletSpawner poolOwner; // Reference to the spawner managing this bullet
+    public IBulletPool poolOwner; // Reference to the pool managing this bullet
 
     private float timer = 0f;
 
@@ -79,7 +85,8 @@ public abstract class BulletBase : MonoBehaviour
     {
         timer = 0f; // Reset the timer
 
-        if (poolOwner != null)
+        // Cast to Object so a destroyed owner (e.g. a spawner removed on phase change) counts as null
+        if (poolOwner is Object owner && owner != null)
         {
             poolOwner.ReturnBulletToPool(gameObject); // Return the bullet to its spawner's pool
         }
