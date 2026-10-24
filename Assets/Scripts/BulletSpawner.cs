@@ -74,6 +74,18 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
         }
     }
 
+    private void OnDestroy()
+    {
+        // Pooled bullets aren't children of the spawner, so clean up the inactive ones or they're left in the scene.
+        // Bullets still in flight destroy themselves when they finish (BulletBase.ReturnToPool).
+        if (bulletPool == null) return;
+        foreach (GameObject bullet in bulletPool)
+        {
+            if (bullet != null) Destroy(bullet);
+        }
+        bulletPool.Clear();
+    }
+
     public void ReturnBulletToPool(GameObject bullet)
     {
         bullet.SetActive(false);
