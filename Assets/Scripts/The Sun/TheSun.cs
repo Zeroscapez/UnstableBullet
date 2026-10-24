@@ -139,6 +139,9 @@ public class TheSun : Enemy
         currentState = TheSunBossState.Phase1;
         CustomDebug.Log("The Sun Phase 1");
 
+        // Aimed 3-way so the player can't just sit in a gap in the explosion ring
+        AddAimedSpawner(phase1Spawners, 2f, 3, 20f, 5f, 4f);
+
 
         GameObject spawner5;
 
@@ -170,6 +173,9 @@ public class TheSun : Enemy
         currentState = TheSunBossState.Phase2P1;
         DestroySpawners(phase1Spawners);
         CustomDebug.Log("The Sun Phase 2 Part 1");
+
+        // Single aimed shots from the Sun; keeps firing into Part 2
+        AddAimedSpawner(phase2Spawners, 1.5f, 1, 0f, 6f, 2f);
 
         GameObject spawner1;
         GameObject spawner2;
@@ -234,6 +240,9 @@ public class TheSun : Enemy
         moveTimer = 0f;
 
        CustomDebug.Log("The Sun Phase 2 Part 2");
+
+        // Wide aimed 5-way while the Sun moves around
+        AddAimedSpawner(phase2Spawners, 2.5f, 5, 40f, 5f, 2f);
        
             
             GameObject spawner3;
@@ -295,6 +304,9 @@ public class TheSun : Enemy
         transform.position = originalPosition;
         currentState = TheSunBossState.Phase3;
         CustomDebug.Log("The Sun Phase 3");
+
+        // Fast aimed 3-way on top of the rotating explosions
+        AddAimedSpawner(phase3Spawners, 2f, 3, 24f, 6f, 1f);
 
         GameObject spawner6;
         GameObject spawner7;
@@ -387,6 +399,31 @@ public class TheSun : Enemy
         // Start movement and attack coroutine
         StartCoroutine(SpawnerAttackSequence(spawner, Vector3.down, spawnDelay));
     }
+    // Adds a spawner at the centre of the Sun that fires a spread aimed at the player.
+    // It's parented to the boss so it follows the Sun when it moves.
+    private void AddAimedSpawner(List<GameObject> phaseSpawners, float firingRate, int bulletCount, float spreadAngle, float speed, float spawnDelay)
+    {
+        GameObject spawner = Instantiate(spawnerPrefab, centerOfSun.position, Quaternion.identity, transform);
+        phaseSpawners.Add(spawner);
+
+        ConfigureSpawner(
+            spawner,
+            SpawnerType.Aimed,
+            firingRate,
+            bulletCount,
+            spreadAngle,
+            0f, // Wave Frequency
+            0f, // Wave Amplitude
+            0f, // Spiral Rotate Speed
+            false, // Should Rotate
+            0f, // Rotation Speed
+            speed,
+            spawnDelay,
+            20f, // Bullet Life
+            false // shouldHome
+            );
+    }
+
     private IEnumerator SpawnerAttackSequence(GameObject spawner, Vector3 moveDirection, float spawnerDelay)
     {
         Vector3 targetPosition = spawner.transform.position + moveDirection;
