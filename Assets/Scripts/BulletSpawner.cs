@@ -141,6 +141,19 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
     // Pattern Implementations
     private void FireFanPattern()
     {
+        FireSpread();
+    }
+
+    // Fires bulletCount bullets evenly across spreadAngle, centred on the spawner's facing
+    private void FireSpread()
+    {
+        // One bullet has no spread to divide (and would divide by zero), so fire it straight
+        if (bulletCount <= 1)
+        {
+            SpawnBullet(transform.rotation);
+            return;
+        }
+
         float angleStep = spreadAngle / (bulletCount - 1);
         float startAngle = -spreadAngle / 2;
         for (int i = 0; i < bulletCount; i++)
@@ -176,14 +189,8 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
 
     private void FireArcPattern()
     {
-        float angleStep = spreadAngle / (bulletCount - 1);
-        float startAngle = -spreadAngle / 2;
-        for (int i = 0; i < bulletCount; i++)
-        {
-            float angle = startAngle + (i * angleStep);
-            Quaternion rotation = Quaternion.Euler(0, 0, transform.eulerAngles.z + angle);
-            SpawnBullet(rotation);
-        }
+        // Same shape as Fan for now
+        FireSpread();
     }
 
     private void FireExplosionPattern()
