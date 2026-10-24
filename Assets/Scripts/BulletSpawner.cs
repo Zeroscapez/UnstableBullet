@@ -18,6 +18,7 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
     [SerializeField] public float waveFrequency = 1f;
     [SerializeField] public float waveAmplitude = 1f;
     [SerializeField] public float spiralRotationSpeed = 10f;
+    [SerializeField] public float burstSpeedStep = 0.15f; // Each Burst bullet is this much faster than the one before (0.15 = +15%)
 
     [Header("Rotation Settings")]
     public bool rotateSpawner = false;
@@ -119,7 +120,7 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
 
 
     // Update your SpawnBullet method:
-    private void SpawnBullet(Quaternion rotation)
+    private void SpawnBullet(Quaternion rotation, float speedMultiplier = 1f)
     {
         GameObject bullet = GetBullet();
         bullet.transform.position = transform.position;
@@ -128,7 +129,7 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
         BulletBase bulletScript = bullet.GetComponent<BulletBase>();
         if (bulletScript != null)
         {
-            bulletScript.speed = speed;
+            bulletScript.speed = speed * speedMultiplier;
             bulletScript.bulletLife = bulletLife;
             bulletScript.poolOwner = this;
             bulletScript.isHoming = enableHoming;
@@ -159,9 +160,10 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
 
     private void FireBurstPattern()
     {
+        // Vary the speed so the bullets spread into a line instead of stacking on one spot
         for (int i = 0; i < bulletCount; i++)
         {
-            SpawnBullet(transform.rotation);
+            SpawnBullet(transform.rotation, 1f + i * burstSpeedStep);
         }
     }
 
