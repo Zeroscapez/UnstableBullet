@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion }
+public enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion, Aimed } // Add new values at the end; scenes store these as numbers
 
 public class BulletSpawner : MonoBehaviour, IBulletPool
 {
@@ -111,6 +111,7 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
                 case SpawnerType.Spiral: FireSpiralPattern(); break;
                 case SpawnerType.Arc: FireArcPattern(); break;
                 case SpawnerType.Explosion: FireExplosionPattern(); break;
+                case SpawnerType.Aimed: FireAimedPattern(); break;
             }
         }
     }
@@ -141,16 +142,16 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
     // Pattern Implementations
     private void FireFanPattern()
     {
-        FireSpread();
+        FireSpread(transform.eulerAngles.z);
     }
 
-    // Fires bulletCount bullets evenly across spreadAngle, centred on the spawner's facing
-    private void FireSpread()
+    // Fires bulletCount bullets evenly across spreadAngle, centred on centerAngle (degrees)
+    private void FireSpread(float centerAngle)
     {
         // One bullet has no spread to divide (and would divide by zero), so fire it straight
         if (bulletCount <= 1)
         {
-            SpawnBullet(transform.rotation);
+            SpawnBullet(Quaternion.Euler(0, 0, centerAngle));
             return;
         }
 
@@ -159,9 +160,22 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
         for (int i = 0; i < bulletCount; i++)
         {
             float angle = startAngle + (i * angleStep);
-            Quaternion rotation = Quaternion.Euler(0, 0, transform.eulerAngles.z + angle);
+            Quaternion rotation = Quaternion.Euler(0, 0, centerAngle + angle);
             SpawnBullet(rotation);
         }
+    }
+
+    // Like Fan, but centred on the target (the player) at the moment of firing.
+    // bulletCount 1 gives a single aimed shot.
+    private void FireAimedPattern()
+    {
+        float angle = transform.eulerAngles.z;
+        if (target != null)
+        {
+            Vector2 toTarget = target.position - transform.position;
+            angle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
+        }
+        FireSpread(angle);
     }
 
     private void FireWavePattern()
@@ -190,7 +204,7 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
     private void FireArcPattern()
     {
         // Same shape as Fan for now
-        FireSpread();
+        FireSpread(transform.eulerAngles.z);
     }
 
     private void FireExplosionPattern()
