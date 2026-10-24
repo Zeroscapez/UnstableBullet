@@ -224,6 +224,10 @@ public class TheSun : Enemy
     {
         currentState = TheSunBossState.Phase2P2;
 
+        // Pick a real first target; otherwise the boss heads for (0, 0) first, which is mid-screen
+        PickNewTopHalfTarget();
+        moveTimer = 0f;
+
        CustomDebug.Log("The Sun Phase 2 Part 2");
        
             
