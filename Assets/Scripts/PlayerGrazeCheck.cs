@@ -15,7 +15,8 @@ public class PlayerGrazeCheck : MonoBehaviour
     public LayerMask bulletLayer;
 
     // Track bullets currently inside the graze trigger
-    public HashSet<EnemyBullet> bulletsInRange = new HashSet<EnemyBullet>();
+    // Runtime-only; Unity can't serialize a HashSet, so keep it private
+    private readonly HashSet<EnemyBullet> bulletsInRange = new HashSet<EnemyBullet>();
 
     private void Awake()
     {
