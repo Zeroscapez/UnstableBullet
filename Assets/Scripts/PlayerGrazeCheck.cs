@@ -47,6 +47,14 @@ public class PlayerGrazeCheck : MonoBehaviour
         var bullet = col.GetComponent<EnemyBullet>();
         if (bullet != null && bulletsInRange.Contains(bullet))
         {
+            // Exit also fires when a bullet is disabled inside the zone (returned to its pool, cleared by a sigil).
+            // That isn't a near miss, so drop it without awarding a graze.
+            if (!bullet.isActiveAndEnabled)
+            {
+                bulletsInRange.Remove(bullet);
+                return;
+            }
+
             // Check if the distance between bullet and the center of the player is greater than the hitbox radius.
             float dist = Vector2.Distance(bullet.transform.position, playerCenter.position);
             if (dist > hitboxRadius && !bullet.hasHitPlayer && !bullet.hasBeenGrazed)
