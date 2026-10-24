@@ -169,7 +169,8 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
 
     private void FireSpiralPattern()
     {
-        transform.Rotate(0, 0, spiralRotationSpeed * Time.deltaTime);
+        // Runs once per shot, so turn by the time since the last shot (degrees per second)
+        transform.Rotate(0, 0, spiralRotationSpeed * firingRate);
         SpawnBullet(transform.rotation);
     }
 
@@ -205,7 +206,8 @@ public class BulletSpawner : MonoBehaviour, IBulletPool
 
     private void FireSpinPattern()
     {
-        transform.Rotate(0, 0, rotationSpeed * Time.deltaTime);
+        // Runs once per shot, so turn by the time since the last shot (degrees per second)
+        transform.Rotate(0, 0, rotationSpeed * firingRate);
         SpawnBullet(transform.rotation);
     }
 }
