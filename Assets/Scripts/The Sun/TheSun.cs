@@ -24,6 +24,7 @@ public class TheSun : Enemy
     [Header("Boss Settings")]
     public Transform player;
     public GameObject idolHPBar;
+    private Image idolFill;
 
 
     [Header("Movement Settings")]
@@ -57,31 +58,35 @@ public class TheSun : Enemy
         phase2P2HP = maxHealth * 0.5f;
         phase3HP = maxHealth * 0.3f;
         originalPosition = transform.position;
-       
-        StartPhase1();
-    }
 
-    private void Update()
-    {
-        Image idol;
-
+        // Look up the HP bar's fill image once instead of every frame
         if (idolHPBar != null)
         {
-            idol = idolHPBar.transform.GetChild(0).GetComponent<Image>();
-            idol.fillAmount = currentHealth / maxHealth;
+            idolFill = idolHPBar.transform.GetChild(0).GetComponent<Image>();
         }
         else
         {
             CustomDebug.LogWarning("Idol HP Bar is not assigned in the inspector.");
         }
-       
-        DebugMode = PlayerScoreManager.Instance.DebugMode;
-        if (DebugMode)
-        {
 
+        StartPhase1();
+    }
+
+    private void Update()
+    {
+        if (idolFill != null)
+        {
+            idolFill.fillAmount = currentHealth / maxHealth;
+        }
+
+        // Only log when debug mode switches on, not every frame
+        bool debugModeNow = PlayerScoreManager.Instance.DebugMode;
+        if (debugModeNow && !DebugMode)
+        {
             CustomDebug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
         }
-        
+        DebugMode = debugModeNow;
+
 
 
         fightTimer = LevelManager.Instance.timer;
