@@ -7,28 +7,28 @@ public class PauseMenuControl : MonoBehaviour
 
     private void Start()
     {
-        // Find the PlayerController in the scene
-        playerController = FindObjectOfType<PlayerController>();
+        playerController = LevelManager.Instance.playerController;
 
         if (playerController == null)
         {
-            Debug.LogError("PlayerController not found in the scene!");
+            CustomDebug.LogError("PlayerController not found in the scene!");
         }
     }
 
     public void ResumeButton()
     {
-        // Resume the game
-        Time.timeScale = 1f;
+        // Let the player resume so its controls are re-enabled too
+        if (playerController != null)
+        {
+            playerController.Resume();
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
 
         // Hide the pause menu
         gameObject.SetActive(false);
-
-        // Update the isPaused variable in PlayerController
-        if (playerController != null)
-        {
-            playerController.isPaused = false;
-        }
     }
 
     public void QuitButton()

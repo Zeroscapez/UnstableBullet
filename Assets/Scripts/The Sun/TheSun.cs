@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEngine.UI;
-using Image = UnityEngine.UI.Image;
 
 
 public enum TheSunBossState
@@ -15,15 +13,14 @@ public class TheSun : Enemy
     [Header("Spawner Settings")]
     public GameObject spawnerPrefab;
     public float spawnerMoveDistance = 5f;
-    public float spawnerDelay = 2f;
     public Transform leftHand;
     public Transform rightHand;
     public Transform centerOfSun;
     public Transform centerOfBounds;
 
     [Header("Boss Settings")]
-    public Transform player;
     public GameObject idolHPBar;
+    private Image idolFill;
 
 
     [Header("Movement Settings")]
@@ -37,12 +34,25 @@ public class TheSun : Enemy
     [Header("State and Timer")]
     public TheSunBossState currentState = TheSunBossState.Phase1; 
     public float fightTimer = 0f;
+    [Tooltip("Fraction of max HP at which each phase starts")]
+    [SerializeField, Range(0f, 1f)] private float phase2P1Threshold = 0.8f;
+    [SerializeField, Range(0f, 1f)] private float phase2P2Threshold = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float phase3Threshold = 0.3f;
     public float phase2P1HP;
     public float phase2P2HP;
     public float phase3HP;
 
-    private GameObject leftSpawner;
-    private GameObject rightSpawner;
+
+    [Header("Phase Transitions")]
+    [SerializeField] private float transitionInvulnerability = 2f; // Seconds the boss ignores damage after a phase change
+    [SerializeField] private int bulletClearPoints = 100; // Score per enemy bullet cleared on a phase change or death
+    [SerializeField] private float returnToStartSpeed = 4f; // How fast the boss glides back to its start position for Phase 3
+    [SerializeField] private float blinkInterval = 0.1f;
+    private bool isInvulnerable = false;
+    private Coroutine invulnerabilityRoutine;
+    private Coroutine returnToStartRoutine;
+    private SpriteRenderer[] bossRenderers;
+    private float[] bossRendererAlphas; // Each sprite's own alpha, so the blink restores it exactly
 
     public bool DebugMode;
 
@@ -53,47 +63,59 @@ public class TheSun : Enemy
     public override void Start()
     {
         this.currentHealth = maxHealth;
-        phase2P1HP = maxHealth * 0.8f;
-        phase2P2HP = maxHealth * 0.5f;
-        phase3HP = maxHealth * 0.3f;
+        phase2P1HP = maxHealth * phase2P1Threshold;
+        phase2P2HP = maxHealth * phase2P2Threshold;
+        phase3HP = maxHealth * phase3Threshold;
         originalPosition = transform.position;
-       
+
+        // Look up the HP bar's fill image once instead of every frame
+        if (idolHPBar != null)
+        {
+            idolFill = idolHPBar.transform.GetChild(0).GetComponent<Image>();
+        }
+        else
+        {
+            CustomDebug.LogWarning("Idol HP Bar is not assigned in the inspector.");
+        }
+
+        // Cache the boss's own sprites (before any spawners are parented to it) for the invulnerability blink
+        bossRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        bossRendererAlphas = new float[bossRenderers.Length];
+        for (int i = 0; i < bossRenderers.Length; i++)
+        {
+            bossRendererAlphas[i] = bossRenderers[i].color.a;
+        }
+
         StartPhase1();
     }
 
     private void Update()
     {
-        Image idol;
+        if (idolFill != null)
+        {
+            idolFill.fillAmount = currentHealth / maxHealth;
+        }
 
-        if (idolHPBar != null)
+        // Only log when debug mode switches on, not every frame
+        bool debugModeNow = PlayerScoreManager.Instance.DebugMode;
+        if (debugModeNow && !DebugMode)
         {
-            idol = idolHPBar.transform.GetChild(0).GetComponent<Image>();
-            idol.fillAmount = currentHealth / maxHealth;
+            CustomDebug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
         }
-        else
-        {
-            Debug.LogWarning("Idol HP Bar is not assigned in the inspector.");
-        }
-       
-        DebugMode = PlayerScoreManager.Instance.DebugMode;
-        if (DebugMode)
-        {
-            
-            Debug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
-        }
-        
+        DebugMode = debugModeNow;
+
 
 
         fightTimer = LevelManager.Instance.timer;
 
         // Check for phase transitions based on health
-        if (currentState == TheSunBossState.Phase1 && currentHealth <= (maxHealth * 0.8))
+        if (currentState == TheSunBossState.Phase1 && currentHealth <= phase2P1HP)
         {
             StartPhase2P1();
         }
 
 
-        if(currentState == TheSunBossState.Phase2P1 && currentHealth <= (maxHealth * 0.5))
+        if(currentState == TheSunBossState.Phase2P1 && currentHealth <= phase2P2HP)
         {
             StartPhase2P2();
         }
@@ -103,23 +125,27 @@ public class TheSun : Enemy
             MoveBoss();
         }
 
-        if (currentState == TheSunBossState.Phase2P2 && currentHealth <= (maxHealth * 0.3))
+        if (currentState == TheSunBossState.Phase2P2 && currentHealth <= phase3HP)
         {
            
             StartPhase3();
         }
 
-        if(Input.GetKeyDown(KeyCode.F1) && DebugMode)
+        // Dev keys (Input System); Keyboard.current is null when no keyboard is connected
+        var kb = UnityEngine.InputSystem.Keyboard.current;
+
+        // Only skip forward, so pressing a key twice can't stack a phase's spawners
+        if(kb != null && kb.f1Key.wasPressedThisFrame && DebugMode && currentState < TheSunBossState.Phase2P1)
         {
             StartPhase2P1();
         }
 
-        if (Input.GetKeyDown(KeyCode.F2) && DebugMode)
+        if (kb != null && kb.f2Key.wasPressedThisFrame && DebugMode && currentState < TheSunBossState.Phase2P2)
         {
             StartPhase2P2();
         }
 
-        if(Input.GetKeyDown(KeyCode.F3) && DebugMode)
+        if(kb != null && kb.f3Key.wasPressedThisFrame && DebugMode && currentState < TheSunBossState.Phase3)
         {
             StartPhase3();
         }
@@ -130,7 +156,10 @@ public class TheSun : Enemy
         
         
         currentState = TheSunBossState.Phase1;
-        Debug.Log("The Sun Phase 1");
+        CustomDebug.Log("The Sun Phase 1");
+
+        // Aimed 3-way so the player can't just sit in a gap in the explosion ring
+        AddAimedSpawner(phase1Spawners, 2f, 3, 20f, 5f, 4f);
 
 
         GameObject spawner5;
@@ -162,7 +191,11 @@ public class TheSun : Enemy
     {
         currentState = TheSunBossState.Phase2P1;
         DestroySpawners(phase1Spawners);
-        Debug.Log("The Sun Phase 2 Part 1");
+        BeginPhaseTransition();
+        CustomDebug.Log("The Sun Phase 2 Part 1");
+
+        // Single aimed shots from the Sun; keeps firing into Part 2
+        AddAimedSpawner(phase2Spawners, 1.5f, 1, 0f, 6f, 2f);
 
         GameObject spawner1;
         GameObject spawner2;
@@ -220,8 +253,17 @@ public class TheSun : Enemy
     private void StartPhase2P2()
     {
         currentState = TheSunBossState.Phase2P2;
-        
-        Debug.Log("The Sun Phase 2 Part 2");
+        DestroySpawners(phase1Spawners); // Only has anything in it when F2 skips straight from Phase 1
+        BeginPhaseTransition();
+
+        // Pick a real first target; otherwise the boss heads for (0, 0) first, which is mid-screen
+        PickNewTopHalfTarget();
+        moveTimer = 0f;
+
+       CustomDebug.Log("The Sun Phase 2 Part 2");
+
+        // Wide aimed 5-way while the Sun moves around
+        AddAimedSpawner(phase2Spawners, 2.5f, 5, 40f, 5f, 2f);
        
             
             GameObject spawner3;
@@ -278,16 +320,26 @@ public class TheSun : Enemy
 
     private void StartPhase3()
     {
+        DestroySpawners(phase1Spawners); // Only has anything in it when F3 skips straight from Phase 1
         DestroySpawners(phase2Spawners);
-        transform.position = originalPosition;
+        BeginPhaseTransition();
+
+        // Glide back to the start position instead of teleporting
+        if (returnToStartRoutine != null) StopCoroutine(returnToStartRoutine);
+        returnToStartRoutine = StartCoroutine(ReturnToStart());
         currentState = TheSunBossState.Phase3;
-        Debug.Log("The Sun Phase 3");
+        CustomDebug.Log("The Sun Phase 3");
+
+        // Fast aimed 3-way on top of the rotating explosions
+        AddAimedSpawner(phase3Spawners, 2f, 3, 24f, 6f, 1f);
 
         GameObject spawner6;
         GameObject spawner7;
 
         spawner6 = Instantiate(spawnerPrefab, centerOfBounds.position, Quaternion.Euler(0, 0, -90));
         spawner7 = Instantiate(spawnerPrefab, centerOfBounds.position, Quaternion.Euler(0, 0, 0));
+        phase3Spawners.Add(spawner6);
+        phase3Spawners.Add(spawner7);
 
         ConfigureSpawner(
               spawner6, //Spawner Ref
@@ -366,17 +418,49 @@ public class TheSun : Enemy
         spawnerScript.rotateSpawner = shouldRotate;
         spawnerScript.rotationSpeed = rotationSpeed;
 
+        // Hold fire until the slide-in and delay finish (the prefab's spawner starts enabled)
+        spawnerScript.enabled = false;
+
         // Start movement and attack coroutine
         StartCoroutine(SpawnerAttackSequence(spawner, Vector3.down, spawnDelay));
     }
+    // Adds a spawner at the centre of the Sun that fires a spread aimed at the player.
+    // It's parented to the boss so it follows the Sun when it moves.
+    private void AddAimedSpawner(List<GameObject> phaseSpawners, float firingRate, int bulletCount, float spreadAngle, float speed, float spawnDelay)
+    {
+        GameObject spawner = Instantiate(spawnerPrefab, centerOfSun.position, Quaternion.identity, transform);
+        phaseSpawners.Add(spawner);
+
+        ConfigureSpawner(
+            spawner,
+            SpawnerType.Aimed,
+            firingRate,
+            bulletCount,
+            spreadAngle,
+            0f, // Wave Frequency
+            0f, // Wave Amplitude
+            0f, // Spiral Rotate Speed
+            false, // Should Rotate
+            0f, // Rotation Speed
+            speed,
+            spawnDelay,
+            20f, // Bullet Life
+            false // shouldHome
+            );
+    }
+
     private IEnumerator SpawnerAttackSequence(GameObject spawner, Vector3 moveDirection, float spawnerDelay)
     {
         Vector3 targetPosition = spawner.transform.position + moveDirection;
-        while (Vector3.Distance(spawner.transform.position, targetPosition) > 0.1f)
+        // The spawner can be destroyed mid-slide by a phase change, so check it every frame
+        while (spawner != null && Vector3.Distance(spawner.transform.position, targetPosition) > 0.1f)
         {
             spawner.transform.position = Vector3.MoveTowards(spawner.transform.position, targetPosition, Time.deltaTime * spawnerMoveDistance);
             yield return null;
         }
+
+        if (spawner == null)
+            yield break;
 
         // Wait for the delay
         yield return new WaitForSeconds(spawnerDelay);
@@ -401,10 +485,10 @@ public class TheSun : Enemy
 
     public override void TakeDamage(float damage)
     {
-        base.TakeDamage(damage);
+        // Ignore hits while the boss is changing phase
+        if (isInvulnerable) return;
 
-        // Additional logic for taking damage (e.g., visual effects)
-       
+        base.TakeDamage(damage);
     }
 
     protected override void Die()
@@ -413,11 +497,83 @@ public class TheSun : Enemy
         DestroySpawners(phase1Spawners);
         DestroySpawners(phase2Spawners);
         DestroySpawners(phase3Spawners);
+        ClearEnemyBullets();
         PlayerScoreManager.Instance.AddScore(10000);
         PlayerScoreManager.Instance.CalculateScore();
         // Additional logic for boss death
-        Debug.Log("Boss defeated! Triggering level end...");
+        CustomDebug.Log("Boss defeated! Triggering level end...");
         base.Die();
+    }
+
+    // Clears the screen and gives the player a short window where the boss can't be damaged
+    private void BeginPhaseTransition()
+    {
+        ClearEnemyBullets();
+
+        if (invulnerabilityRoutine != null) StopCoroutine(invulnerabilityRoutine);
+        invulnerabilityRoutine = StartCoroutine(InvulnerabilityWindow());
+    }
+
+    // Turns every enemy bullet on screen into points
+    private void ClearEnemyBullets()
+    {
+        // Only runs on phase changes, so a scene search is fine here
+        EnemyBullet[] bullets = FindObjectsByType<EnemyBullet>();
+        foreach (EnemyBullet bullet in bullets)
+        {
+            bullet.ReturnToPool();
+        }
+
+        if (bullets.Length > 0)
+        {
+            PlayerScoreManager.Instance.AddScore(bullets.Length * bulletClearPoints);
+        }
+    }
+
+    private IEnumerator InvulnerabilityWindow()
+    {
+        isInvulnerable = true;
+
+        // Blink the boss so the player can see it isn't taking damage
+        float elapsed = 0f;
+        bool dimmed = false;
+        while (elapsed < transitionInvulnerability)
+        {
+            dimmed = !dimmed;
+            SetBossAlpha(dimmed ? 0.4f : 1f);
+            yield return new WaitForSeconds(blinkInterval);
+            elapsed += blinkInterval;
+        }
+
+        SetBossAlpha(1f);
+        isInvulnerable = false;
+        invulnerabilityRoutine = null;
+    }
+
+    // Sets each boss sprite to its own alpha times the multiplier (1 = normal)
+    private void SetBossAlpha(float multiplier)
+    {
+        if (bossRenderers == null) return;
+        for (int i = 0; i < bossRenderers.Length; i++)
+        {
+            SpriteRenderer sr = bossRenderers[i];
+            if (sr == null) continue;
+            Color c = sr.color;
+            c.a = bossRendererAlphas[i] * multiplier;
+            sr.color = c;
+        }
+    }
+
+    private IEnumerator ReturnToStart()
+    {
+        while (Vector3.Distance(transform.position, originalPosition) > 0.01f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, originalPosition, returnToStartSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        transform.position = originalPosition;
+        returnToStartRoutine = null;
     }
 
     private void DestroySpawners(List<GameObject> spawnerList)

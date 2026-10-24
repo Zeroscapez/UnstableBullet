@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IBulletPool
 {
     [Header("Movement")]
     Vector2 moveInput;
@@ -39,6 +39,7 @@ public class PlayerController : MonoBehaviour
     // Private pool for player bullets
     private Queue<GameObject> playerBulletPool = new Queue<GameObject>();
     public float fireRate = 0.2f; //Gap between shots firing
+    [SerializeField] private float playerBulletSpeed = 60f; // Units per second
     public bool autoFire = true;
     [SerializeField] private bool isDistort = false;
   
@@ -55,52 +56,20 @@ public class PlayerController : MonoBehaviour
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
         autoFire = true;
-        if (autoFire)
-        {
-            // Start firing automatically
-            StartFiring();
-        }
-        else if (!autoFire && !isDistort)
-        {
-            // Start firing when the fire button is pressed
-            controls.Player.Fire.performed += ctx => StartFiring();
-            // Stop firing when the fire button is released
-            controls.Player.Fire.canceled += ctx => StopFiring();
-        }
 
+        // Manual fire: hold the button to fire. Subscribed once here; auto fire is handled in Update.
+        controls.Player.Fire.performed += ctx => { if (!autoFire) StartFiring(); };
+        controls.Player.Fire.canceled += ctx => { if (!autoFire) StopFiring(); };
 
         controls.Menu.Pause.performed += ctx =>
         {
             if (isPaused)
             {
-                // Unpause the game
-                Time.timeScale = 1f;
-                isPaused = false;
-                controls.Player.Enable(); // Re-enable player controls
-                // Destroy the instantiated pause menu
-                if (instantiatedPauseMenu != null)
-                {
-                    instantiatedPauseMenu.SetActive(false); // Hide the pause menu
-                }
+                Resume();
             }
             else
             {
-                if (instantiatedPauseMenu == null)
-                {
-                    // Instantiate the pause menu if it doesn't already exist
-                    instantiatedPauseMenu = Instantiate(pauseMenu, Vector3.zero, Quaternion.identity);
-                }
-                else
-                {
-                    // Show the existing pause menu
-                    instantiatedPauseMenu.SetActive(true);
-                }
-
-                // Pause the game
-                Time.timeScale = 0f;
-                controls.Player.Disable();
-                isPaused = true;
-               
+                Pause();
             }
         };
 
@@ -131,6 +100,37 @@ public class PlayerController : MonoBehaviour
        
     }
 
+    private void Pause()
+    {
+        if (instantiatedPauseMenu == null)
+        {
+            // Instantiate the pause menu if it doesn't already exist
+            instantiatedPauseMenu = Instantiate(pauseMenu, Vector3.zero, Quaternion.identity);
+        }
+        else
+        {
+            // Show the existing pause menu
+            instantiatedPauseMenu.SetActive(true);
+        }
+
+        Time.timeScale = 0f;
+        controls.Player.Disable();
+        isPaused = true;
+    }
+
+    // Called by the pause key and by the pause menu's Resume button
+    public void Resume()
+    {
+        Time.timeScale = 1f;
+        isPaused = false;
+        controls.Player.Enable(); // Re-enable player controls
+
+        if (instantiatedPauseMenu != null)
+        {
+            instantiatedPauseMenu.SetActive(false); // Hide the pause menu
+        }
+    }
+
     private void Distort()
     {
 
@@ -142,7 +142,7 @@ public class PlayerController : MonoBehaviour
         isDistort = true;
         this.gameObject.GetComponent<SpriteRenderer>().sprite = distortPlayer; // Set the distorted sprite
         controls.Player.Fire.Disable(); //Disable firing
-        Debug.Log("Distorting");
+        CustomDebug.Log("Distorting");
     }
 
     private void StopDistort()
@@ -153,13 +153,13 @@ public class PlayerController : MonoBehaviour
         isDistort = false;
         this.gameObject.GetComponent<SpriteRenderer>().sprite = defaultPlayer; // Set the default sprite
         controls.Player.Fire.Enable(); // Re-enable firing
-        Debug.Log("Stop Distorting");
+        CustomDebug.Log("Stop Distorting");
     }
 
 
     private void GigaCrash()
     {
-        EnemyBullet[] enemyBullets = FindObjectsOfType<EnemyBullet>();
+        EnemyBullet[] enemyBullets = FindObjectsByType<EnemyBullet>();
 
         int bulletsCleared = 0;
         int pointsgained = 500;
@@ -179,7 +179,7 @@ public class PlayerController : MonoBehaviour
            
             PlayerScoreManager.Instance.AddScore(bulletsCleared * pointsgained);
             
-            Debug.Log($"Cleared {bulletsCleared} bullets and awarded {bulletsCleared * pointsgained} points.");
+            CustomDebug.Log($"Cleared {bulletsCleared} bullets and awarded {bulletsCleared * pointsgained} points.");
 
         }
 
@@ -192,7 +192,7 @@ public class PlayerController : MonoBehaviour
     {
         if (bulletPrefab == null)
         {
-           // Debug.LogError("Bullet prefab is not assigned in the PlayerController!");
+           // CustomDebug.LogError("Bullet prefab is not assigned in the PlayerController!");
             return;
         }
 
@@ -200,6 +200,7 @@ public class PlayerController : MonoBehaviour
         {
             GameObject bullet = Instantiate(bulletPrefab);
             bullet.SetActive(false);
+            bullet.GetComponent<BulletBase>().poolOwner = this;
             playerBulletPool.Enqueue(bullet);
         }
     }
@@ -214,8 +215,9 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            //Debug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
+            //CustomDebug.LogWarning("Player bullet pool is empty! Instantiating a new bullet.");
             GameObject bullet = Instantiate(bulletPrefab);
+            bullet.GetComponent<BulletBase>().poolOwner = this;
             return bullet;
         }
     }
@@ -246,15 +248,7 @@ public class PlayerController : MonoBehaviour
             // Start firing automatically
             StartFiring();
         }
-        else if (!autoFire && !isDistort)
-        {
-            Debug.Log("Manual Fire");
-            // Start firing when the fire button is pressed
-            controls.Player.Fire.performed += ctx => StartFiring();
-            // Stop firing when the fire button is released
-            controls.Player.Fire.canceled += ctx => StopFiring();
-        }
-        else
+        else if (isDistort)
         {
             StopFiring();
         }
@@ -282,22 +276,11 @@ public class PlayerController : MonoBehaviour
             bullet.transform.position = fireOrigin.position;
             bullet.transform.rotation = fireOrigin.rotation;
 
-            // Set the bullet's pool owner
+            // PlayerBullet moves itself using this speed
             BulletBase bulletScript = bullet.GetComponent<BulletBase>();
             if (bulletScript != null)
             {
-             
-            }
-
-            // Set the bullet's velocity
-            Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.linearVelocity = fireOrigin.up * 10f; // Adjust speed as needed
-            }
-            else
-            {
-                Debug.LogError("Rigidbody2D not found on bulletPrefab!");
+                bulletScript.speed = playerBulletSpeed;
             }
 
           
@@ -335,6 +318,9 @@ public class PlayerController : MonoBehaviour
     {
         // Notify subscribers that the player has died
         OnPlayerDied?.Invoke();
+
+        // Free the generated input actions so they don't leak when the scene unloads
+        controls?.Dispose();
     }
 
    

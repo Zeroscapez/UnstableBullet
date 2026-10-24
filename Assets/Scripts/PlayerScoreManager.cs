@@ -75,7 +75,7 @@ public class PlayerScoreManager : MonoBehaviour
     {
         if (DebugMode)
         {
-            Debug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
+            CustomDebug.LogWarning("Debug mode is enabled. Dev Actions are enabled");
         }
 
 
@@ -107,7 +107,7 @@ public class PlayerScoreManager : MonoBehaviour
 
         if(disruptToBomb >= 100)
         {
-            Debug.Log("Added Sigil");
+            CustomDebug.Log("Added Sigil");
             AddSigil();
             disruptToBomb = 0;
         }
@@ -126,32 +126,35 @@ public class PlayerScoreManager : MonoBehaviour
     void Update()
     {
 
-        if (DebugMode && Input.GetKeyDown(KeyCode.UpArrow))
+        // Dev keys (Input System); Keyboard.current is null when no keyboard is connected
+        var kb = UnityEngine.InputSystem.Keyboard.current;
+
+        if (DebugMode && kb != null && kb.uKey.wasPressedThisFrame)
         {
             AddScore(1000);
         }
 
-        if (DebugMode && Input.GetKeyDown(KeyCode.I))
+        if (DebugMode && kb != null && kb.iKey.wasPressedThisFrame)
         {
             AddDisrupt(10);
         }
 
-        if (DebugMode && Input.GetKeyDown(KeyCode.O))
+        if (DebugMode && kb != null && kb.oKey.wasPressedThisFrame)
         {
             AddSigil();
         }
 
-        if (DebugMode && Input.GetKeyDown(KeyCode.P))
+        if (DebugMode && kb != null && kb.pKey.wasPressedThisFrame)
         {
             RemoveSigil();
         }
 
-        if(DebugMode && Input.GetKeyDown(KeyCode.L))
+        if(DebugMode && kb != null && kb.lKey.wasPressedThisFrame)
         {
             KillPlayer();
         }
 
-        if (DebugMode && Input.GetKeyDown(KeyCode.K))
+        if (DebugMode && kb != null && kb.kKey.wasPressedThisFrame)
         {
             TakeDamage(1); // Take 1 hit
         }

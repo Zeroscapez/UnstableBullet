@@ -15,7 +15,8 @@ public class PlayerGrazeCheck : MonoBehaviour
     public LayerMask bulletLayer;
 
     // Track bullets currently inside the graze trigger
-    public HashSet<EnemyBullet> bulletsInRange = new HashSet<EnemyBullet>();
+    // Runtime-only; Unity can't serialize a HashSet, so keep it private
+    private readonly HashSet<EnemyBullet> bulletsInRange = new HashSet<EnemyBullet>();
 
     private void Awake()
     {
@@ -47,9 +48,17 @@ public class PlayerGrazeCheck : MonoBehaviour
         var bullet = col.GetComponent<EnemyBullet>();
         if (bullet != null && bulletsInRange.Contains(bullet))
         {
+            // Exit also fires when a bullet is disabled inside the zone (returned to its pool, cleared by a sigil).
+            // That isn't a near miss, so drop it without awarding a graze.
+            if (!bullet.isActiveAndEnabled)
+            {
+                bulletsInRange.Remove(bullet);
+                return;
+            }
+
             // Check if the distance between bullet and the center of the player is greater than the hitbox radius.
             float dist = Vector2.Distance(bullet.transform.position, playerCenter.position);
-            if (dist > hitboxRadius && !bullet.hasHitPlayer)
+            if (dist > hitboxRadius && !bullet.hasHitPlayer && !bullet.hasBeenGrazed)
             {
                 // Mark the bullet as grazed and award points
                 bullet.hasBeenGrazed = true;
@@ -67,6 +76,6 @@ public class PlayerGrazeCheck : MonoBehaviour
         PlayerScoreManager.Instance.AddDisrupt(grazeScoreValue);
         PlayerScoreManager.Instance.AddScore(700);
 
-        //Debug.Log("Grazing points awarded for bullet: " + bullet.name);
+        //CustomDebug.Log("Grazing points awarded for bullet: " + bullet.name);
     }
 }

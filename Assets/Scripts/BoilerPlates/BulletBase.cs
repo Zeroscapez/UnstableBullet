@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Anything that owns a bullet pool (BulletSpawner, PlayerController)
+public interface IBulletPool
+{
+    void ReturnBulletToPool(GameObject bullet);
+}
+
 public abstract class BulletBase : MonoBehaviour
 {
     public float bulletLife = 5f; // Time before bullet is destroyed    
@@ -11,7 +17,7 @@ public abstract class BulletBase : MonoBehaviour
     public Transform target; // Target to home onto (e.g., the player)
 
     [HideInInspector]
-    public BulletSpawner poolOwner; // Reference to the spawner managing this bullet
+    public IBulletPool poolOwner; // Reference to the pool managing this bullet
 
     private float timer = 0f;
 
@@ -24,10 +30,29 @@ public abstract class BulletBase : MonoBehaviour
         }
     }
 
+    // Runs every time the bullet is taken from a pool, so reset per-shot state here
+    protected virtual void OnEnable()
+    {
+        timer = 0f;
+    }
+
     protected virtual void FixedUpdate()
     {
         timer += Time.deltaTime;
 
+        Move();
+
+        if (timer >= bulletLife)
+        {
+            ReturnToPool();
+        }
+
+        CheckBounds();
+    }
+
+    // Subclasses can override this to replace the default movement
+    protected virtual void Move()
+    {
         if (isHoming && target != null)
         {
             HomeOntoTarget();
@@ -36,13 +61,6 @@ public abstract class BulletBase : MonoBehaviour
         {
             MoveStraight();
         }
-
-        if (timer >= bulletLife)
-        {
-            ReturnToPool();
-        }
-
-        CheckBounds();
     }
 
     private void MoveStraight()
@@ -55,7 +73,7 @@ public abstract class BulletBase : MonoBehaviour
         Vector2 direction = (target.position - transform.position).normalized;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
         Quaternion targetRotation = Quaternion.Euler(0, 0, angle);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, speed * Time.deltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, homingSpeed * Time.deltaTime);
         transform.position += transform.right * speed * Time.deltaTime;
     }
 
@@ -79,13 +97,18 @@ public abstract class BulletBase : MonoBehaviour
     {
         timer = 0f; // Reset the timer
 
-        if (poolOwner != null)
+        // Cast to Object so a destroyed owner (e.g. a spawner removed on phase change) counts as null
+        if (poolOwner is Object owner && owner != null)
         {
             poolOwner.ReturnBulletToPool(gameObject); // Return the bullet to its spawner's pool
         }
         else
         {
-            Debug.LogWarning($"Pool owner not set for {gameObject.name}. Destroying the bullet.");
+            // A destroyed owner is expected after a phase change; only warn if no owner was ever set
+            if (poolOwner == null)
+            {
+                CustomDebug.LogWarning($"Pool owner not set for {gameObject.name}. Destroying the bullet.");
+            }
             Destroy(gameObject);
         }
     }

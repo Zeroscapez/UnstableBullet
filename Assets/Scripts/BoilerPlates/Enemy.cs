@@ -9,6 +9,8 @@ public class Enemy : MonoBehaviour
     public float currentHealth; // Current health of the enemy
     public int scoreValue = 100; // Score awarded when the enemy is defeated
 
+    protected bool isDead = false; // Destroy is delayed to end of frame, so guard against dying twice
+
 
     
 
@@ -20,12 +22,15 @@ public class Enemy : MonoBehaviour
 
     public virtual void TakeDamage(float damage)
     {
+        if (isDead) return;
+
         // Reduce health
-        currentHealth -= damage;
+        currentHealth = Mathf.Max(currentHealth - damage, 0f);
 
         // Check if the enemy is dead
         if (currentHealth <= 0)
         {
+            isDead = true;
             Die();
         }
     }

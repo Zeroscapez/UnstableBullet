@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion }
+public enum SpawnerType { Random, Spin, Straight, Fan, Wave, Burst, Spiral, Arc, Explosion, Aimed } // Add new values at the end; scenes store these as numbers
 
-public class BulletSpawner : MonoBehaviour
+public class BulletSpawner : MonoBehaviour, IBulletPool
 {
     [Header("Bullet Prefab")]
     public GameObject bulletPrefab;
@@ -18,6 +18,7 @@ public class BulletSpawner : MonoBehaviour
     [SerializeField] public float waveFrequency = 1f;
     [SerializeField] public float waveAmplitude = 1f;
     [SerializeField] public float spiralRotationSpeed = 10f;
+    [SerializeField] public float burstSpeedStep = 0.15f; // Each Burst bullet is this much faster than the one before (0.15 = +15%)
 
     [Header("Rotation Settings")]
     public bool rotateSpawner = false;
@@ -73,6 +74,18 @@ public class BulletSpawner : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        // Pooled bullets aren't children of the spawner, so clean up the inactive ones or they're left in the scene.
+        // Bullets still in flight destroy themselves when they finish (BulletBase.ReturnToPool).
+        if (bulletPool == null) return;
+        foreach (GameObject bullet in bulletPool)
+        {
+            if (bullet != null) Destroy(bullet);
+        }
+        bulletPool.Clear();
+    }
+
     public void ReturnBulletToPool(GameObject bullet)
     {
         bullet.SetActive(false);
@@ -110,6 +123,7 @@ public class BulletSpawner : MonoBehaviour
                 case SpawnerType.Spiral: FireSpiralPattern(); break;
                 case SpawnerType.Arc: FireArcPattern(); break;
                 case SpawnerType.Explosion: FireExplosionPattern(); break;
+                case SpawnerType.Aimed: FireAimedPattern(); break;
             }
         }
     }
@@ -119,7 +133,7 @@ public class BulletSpawner : MonoBehaviour
 
 
     // Update your SpawnBullet method:
-    private void SpawnBullet(Quaternion rotation)
+    private void SpawnBullet(Quaternion rotation, float speedMultiplier = 1f)
     {
         GameObject bullet = GetBullet();
         bullet.transform.position = transform.position;
@@ -128,7 +142,7 @@ public class BulletSpawner : MonoBehaviour
         BulletBase bulletScript = bullet.GetComponent<BulletBase>();
         if (bulletScript != null)
         {
-            bulletScript.speed = speed;
+            bulletScript.speed = speed * speedMultiplier;
             bulletScript.bulletLife = bulletLife;
             bulletScript.poolOwner = this;
             bulletScript.isHoming = enableHoming;
@@ -140,14 +154,40 @@ public class BulletSpawner : MonoBehaviour
     // Pattern Implementations
     private void FireFanPattern()
     {
+        FireSpread(transform.eulerAngles.z);
+    }
+
+    // Fires bulletCount bullets evenly across spreadAngle, centred on centerAngle (degrees)
+    private void FireSpread(float centerAngle)
+    {
+        // One bullet has no spread to divide (and would divide by zero), so fire it straight
+        if (bulletCount <= 1)
+        {
+            SpawnBullet(Quaternion.Euler(0, 0, centerAngle));
+            return;
+        }
+
         float angleStep = spreadAngle / (bulletCount - 1);
         float startAngle = -spreadAngle / 2;
         for (int i = 0; i < bulletCount; i++)
         {
             float angle = startAngle + (i * angleStep);
-            Quaternion rotation = Quaternion.Euler(0, 0, transform.eulerAngles.z + angle);
+            Quaternion rotation = Quaternion.Euler(0, 0, centerAngle + angle);
             SpawnBullet(rotation);
         }
+    }
+
+    // Like Fan, but centred on the target (the player) at the moment of firing.
+    // bulletCount 1 gives a single aimed shot.
+    private void FireAimedPattern()
+    {
+        float angle = transform.eulerAngles.z;
+        if (target != null)
+        {
+            Vector2 toTarget = target.position - transform.position;
+            angle = Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg;
+        }
+        FireSpread(angle);
     }
 
     private void FireWavePattern()
@@ -159,28 +199,24 @@ public class BulletSpawner : MonoBehaviour
 
     private void FireBurstPattern()
     {
+        // Vary the speed so the bullets spread into a line instead of stacking on one spot
         for (int i = 0; i < bulletCount; i++)
         {
-            SpawnBullet(transform.rotation);
+            SpawnBullet(transform.rotation, 1f + i * burstSpeedStep);
         }
     }
 
     private void FireSpiralPattern()
     {
-        transform.Rotate(0, 0, spiralRotationSpeed * Time.deltaTime);
+        // Runs once per shot, so turn by the time since the last shot (degrees per second)
+        transform.Rotate(0, 0, spiralRotationSpeed * firingRate);
         SpawnBullet(transform.rotation);
     }
 
     private void FireArcPattern()
     {
-        float angleStep = spreadAngle / (bulletCount - 1);
-        float startAngle = -spreadAngle / 2;
-        for (int i = 0; i < bulletCount; i++)
-        {
-            float angle = startAngle + (i * angleStep);
-            Quaternion rotation = Quaternion.Euler(0, 0, transform.eulerAngles.z + angle);
-            SpawnBullet(rotation);
-        }
+        // Same shape as Fan for now
+        FireSpread(transform.eulerAngles.z);
     }
 
     private void FireExplosionPattern()
@@ -203,7 +239,8 @@ public class BulletSpawner : MonoBehaviour
 
     private void FireSpinPattern()
     {
-        transform.Rotate(0, 0, rotationSpeed * Time.deltaTime);
+        // Runs once per shot, so turn by the time since the last shot (degrees per second)
+        transform.Rotate(0, 0, rotationSpeed * firingRate);
         SpawnBullet(transform.rotation);
     }
 }
