@@ -109,17 +109,20 @@ public class TheSun : Enemy
             StartPhase3();
         }
 
-        if(Input.GetKeyDown(KeyCode.F1) && DebugMode)
+        // Dev keys (Input System); Keyboard.current is null when no keyboard is connected
+        var kb = UnityEngine.InputSystem.Keyboard.current;
+
+        if(kb != null && kb.f1Key.wasPressedThisFrame && DebugMode)
         {
             StartPhase2P1();
         }
 
-        if (Input.GetKeyDown(KeyCode.F2) && DebugMode)
+        if (kb != null && kb.f2Key.wasPressedThisFrame && DebugMode)
         {
             StartPhase2P2();
         }
 
-        if(Input.GetKeyDown(KeyCode.F3) && DebugMode)
+        if(kb != null && kb.f3Key.wasPressedThisFrame && DebugMode)
         {
             StartPhase3();
         }
