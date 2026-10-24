@@ -121,17 +121,18 @@ public class TheSun : Enemy
         // Dev keys (Input System); Keyboard.current is null when no keyboard is connected
         var kb = UnityEngine.InputSystem.Keyboard.current;
 
-        if(kb != null && kb.f1Key.wasPressedThisFrame && DebugMode)
+        // Only skip forward, so pressing a key twice can't stack a phase's spawners
+        if(kb != null && kb.f1Key.wasPressedThisFrame && DebugMode && currentState < TheSunBossState.Phase2P1)
         {
             StartPhase2P1();
         }
 
-        if (kb != null && kb.f2Key.wasPressedThisFrame && DebugMode)
+        if (kb != null && kb.f2Key.wasPressedThisFrame && DebugMode && currentState < TheSunBossState.Phase2P2)
         {
             StartPhase2P2();
         }
 
-        if(kb != null && kb.f3Key.wasPressedThisFrame && DebugMode)
+        if(kb != null && kb.f3Key.wasPressedThisFrame && DebugMode && currentState < TheSunBossState.Phase3)
         {
             StartPhase3();
         }
@@ -232,6 +233,7 @@ public class TheSun : Enemy
     private void StartPhase2P2()
     {
         currentState = TheSunBossState.Phase2P2;
+        DestroySpawners(phase1Spawners); // Only has anything in it when F2 skips straight from Phase 1
 
         // Pick a real first target; otherwise the boss heads for (0, 0) first, which is mid-screen
         PickNewTopHalfTarget();
@@ -294,6 +296,7 @@ public class TheSun : Enemy
 
     private void StartPhase3()
     {
+        DestroySpawners(phase1Spawners); // Only has anything in it when F3 skips straight from Phase 1
         DestroySpawners(phase2Spawners);
         transform.position = originalPosition;
         currentState = TheSunBossState.Phase3;
