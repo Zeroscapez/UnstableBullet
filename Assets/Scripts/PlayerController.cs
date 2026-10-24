@@ -39,6 +39,7 @@ public class PlayerController : MonoBehaviour, IBulletPool
     // Private pool for player bullets
     private Queue<GameObject> playerBulletPool = new Queue<GameObject>();
     public float fireRate = 0.2f; //Gap between shots firing
+    [SerializeField] private float playerBulletSpeed = 60f; // Units per second
     public bool autoFire = true;
     [SerializeField] private bool isDistort = false;
   
@@ -284,22 +285,11 @@ public class PlayerController : MonoBehaviour, IBulletPool
             bullet.transform.position = fireOrigin.position;
             bullet.transform.rotation = fireOrigin.rotation;
 
-            // Set the bullet's pool owner
+            // PlayerBullet moves itself using this speed
             BulletBase bulletScript = bullet.GetComponent<BulletBase>();
             if (bulletScript != null)
             {
-             
-            }
-
-            // Set the bullet's velocity
-            Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.linearVelocity = fireOrigin.up * 10f; // Adjust speed as needed
-            }
-            else
-            {
-                CustomDebug.LogError("Rigidbody2D not found on bulletPrefab!");
+                bulletScript.speed = playerBulletSpeed;
             }
 
           

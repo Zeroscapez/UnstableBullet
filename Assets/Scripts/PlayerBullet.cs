@@ -20,15 +20,11 @@ public class PlayerBullet : BulletBase
         }
     }
 
-    protected override void FixedUpdate()
+    protected override void Move()
     {
-        base.FixedUpdate();
-
-        // Ensure the bullet's horizontal position matches the player's position
-        if (playerTransform != null)
-        {
-            transform.position = new Vector2(playerTransform.position.x, transform.position.y + 1f);
-        }
+        // Travel straight up at 'speed' while keeping the bullet lined up with the player's x position
+        float x = playerTransform != null ? playerTransform.position.x : transform.position.x;
+        transform.position = new Vector2(x, transform.position.y + speed * Time.deltaTime);
     }
 
     protected override void OnTriggerEnter2D(Collider2D other)

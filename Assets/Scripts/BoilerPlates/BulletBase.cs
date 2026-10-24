@@ -34,6 +34,19 @@ public abstract class BulletBase : MonoBehaviour
     {
         timer += Time.deltaTime;
 
+        Move();
+
+        if (timer >= bulletLife)
+        {
+            ReturnToPool();
+        }
+
+        CheckBounds();
+    }
+
+    // Subclasses can override this to replace the default movement
+    protected virtual void Move()
+    {
         if (isHoming && target != null)
         {
             HomeOntoTarget();
@@ -42,13 +55,6 @@ public abstract class BulletBase : MonoBehaviour
         {
             MoveStraight();
         }
-
-        if (timer >= bulletLife)
-        {
-            ReturnToPool();
-        }
-
-        CheckBounds();
     }
 
     private void MoveStraight()
