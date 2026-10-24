@@ -43,6 +43,17 @@ public class TheSun : Enemy
     public float phase3HP;
 
 
+    [Header("Phase Transitions")]
+    [SerializeField] private float transitionInvulnerability = 2f; // Seconds the boss ignores damage after a phase change
+    [SerializeField] private int bulletClearPoints = 100; // Score per enemy bullet cleared on a phase change or death
+    [SerializeField] private float returnToStartSpeed = 4f; // How fast the boss glides back to its start position for Phase 3
+    [SerializeField] private float blinkInterval = 0.1f;
+    private bool isInvulnerable = false;
+    private Coroutine invulnerabilityRoutine;
+    private Coroutine returnToStartRoutine;
+    private SpriteRenderer[] bossRenderers;
+    private float[] bossRendererAlphas; // Each sprite's own alpha, so the blink restores it exactly
+
     public bool DebugMode;
 
     private List<GameObject> phase1Spawners = new();
@@ -65,6 +76,14 @@ public class TheSun : Enemy
         else
         {
             CustomDebug.LogWarning("Idol HP Bar is not assigned in the inspector.");
+        }
+
+        // Cache the boss's own sprites (before any spawners are parented to it) for the invulnerability blink
+        bossRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        bossRendererAlphas = new float[bossRenderers.Length];
+        for (int i = 0; i < bossRenderers.Length; i++)
+        {
+            bossRendererAlphas[i] = bossRenderers[i].color.a;
         }
 
         StartPhase1();
@@ -172,6 +191,7 @@ public class TheSun : Enemy
     {
         currentState = TheSunBossState.Phase2P1;
         DestroySpawners(phase1Spawners);
+        BeginPhaseTransition();
         CustomDebug.Log("The Sun Phase 2 Part 1");
 
         // Single aimed shots from the Sun; keeps firing into Part 2
@@ -234,6 +254,7 @@ public class TheSun : Enemy
     {
         currentState = TheSunBossState.Phase2P2;
         DestroySpawners(phase1Spawners); // Only has anything in it when F2 skips straight from Phase 1
+        BeginPhaseTransition();
 
         // Pick a real first target; otherwise the boss heads for (0, 0) first, which is mid-screen
         PickNewTopHalfTarget();
@@ -301,7 +322,11 @@ public class TheSun : Enemy
     {
         DestroySpawners(phase1Spawners); // Only has anything in it when F3 skips straight from Phase 1
         DestroySpawners(phase2Spawners);
-        transform.position = originalPosition;
+        BeginPhaseTransition();
+
+        // Glide back to the start position instead of teleporting
+        if (returnToStartRoutine != null) StopCoroutine(returnToStartRoutine);
+        returnToStartRoutine = StartCoroutine(ReturnToStart());
         currentState = TheSunBossState.Phase3;
         CustomDebug.Log("The Sun Phase 3");
 
@@ -460,10 +485,10 @@ public class TheSun : Enemy
 
     public override void TakeDamage(float damage)
     {
-        base.TakeDamage(damage);
+        // Ignore hits while the boss is changing phase
+        if (isInvulnerable) return;
 
-        // Additional logic for taking damage (e.g., visual effects)
-       
+        base.TakeDamage(damage);
     }
 
     protected override void Die()
@@ -472,11 +497,83 @@ public class TheSun : Enemy
         DestroySpawners(phase1Spawners);
         DestroySpawners(phase2Spawners);
         DestroySpawners(phase3Spawners);
+        ClearEnemyBullets();
         PlayerScoreManager.Instance.AddScore(10000);
         PlayerScoreManager.Instance.CalculateScore();
         // Additional logic for boss death
         CustomDebug.Log("Boss defeated! Triggering level end...");
         base.Die();
+    }
+
+    // Clears the screen and gives the player a short window where the boss can't be damaged
+    private void BeginPhaseTransition()
+    {
+        ClearEnemyBullets();
+
+        if (invulnerabilityRoutine != null) StopCoroutine(invulnerabilityRoutine);
+        invulnerabilityRoutine = StartCoroutine(InvulnerabilityWindow());
+    }
+
+    // Turns every enemy bullet on screen into points
+    private void ClearEnemyBullets()
+    {
+        // Only runs on phase changes, so a scene search is fine here
+        EnemyBullet[] bullets = FindObjectsByType<EnemyBullet>();
+        foreach (EnemyBullet bullet in bullets)
+        {
+            bullet.ReturnToPool();
+        }
+
+        if (bullets.Length > 0)
+        {
+            PlayerScoreManager.Instance.AddScore(bullets.Length * bulletClearPoints);
+        }
+    }
+
+    private IEnumerator InvulnerabilityWindow()
+    {
+        isInvulnerable = true;
+
+        // Blink the boss so the player can see it isn't taking damage
+        float elapsed = 0f;
+        bool dimmed = false;
+        while (elapsed < transitionInvulnerability)
+        {
+            dimmed = !dimmed;
+            SetBossAlpha(dimmed ? 0.4f : 1f);
+            yield return new WaitForSeconds(blinkInterval);
+            elapsed += blinkInterval;
+        }
+
+        SetBossAlpha(1f);
+        isInvulnerable = false;
+        invulnerabilityRoutine = null;
+    }
+
+    // Sets each boss sprite to its own alpha times the multiplier (1 = normal)
+    private void SetBossAlpha(float multiplier)
+    {
+        if (bossRenderers == null) return;
+        for (int i = 0; i < bossRenderers.Length; i++)
+        {
+            SpriteRenderer sr = bossRenderers[i];
+            if (sr == null) continue;
+            Color c = sr.color;
+            c.a = bossRendererAlphas[i] * multiplier;
+            sr.color = c;
+        }
+    }
+
+    private IEnumerator ReturnToStart()
+    {
+        while (Vector3.Distance(transform.position, originalPosition) > 0.01f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, originalPosition, returnToStartSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        transform.position = originalPosition;
+        returnToStartRoutine = null;
     }
 
     private void DestroySpawners(List<GameObject> spawnerList)
