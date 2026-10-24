@@ -56,52 +56,20 @@ public class PlayerController : MonoBehaviour, IBulletPool
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
         autoFire = true;
-        if (autoFire)
-        {
-            // Start firing automatically
-            StartFiring();
-        }
-        else if (!autoFire && !isDistort)
-        {
-            // Start firing when the fire button is pressed
-            controls.Player.Fire.performed += ctx => StartFiring();
-            // Stop firing when the fire button is released
-            controls.Player.Fire.canceled += ctx => StopFiring();
-        }
 
+        // Manual fire: hold the button to fire. Subscribed once here; auto fire is handled in Update.
+        controls.Player.Fire.performed += ctx => { if (!autoFire) StartFiring(); };
+        controls.Player.Fire.canceled += ctx => { if (!autoFire) StopFiring(); };
 
         controls.Menu.Pause.performed += ctx =>
         {
             if (isPaused)
             {
-                // Unpause the game
-                Time.timeScale = 1f;
-                isPaused = false;
-                controls.Player.Enable(); // Re-enable player controls
-                // Destroy the instantiated pause menu
-                if (instantiatedPauseMenu != null)
-                {
-                    instantiatedPauseMenu.SetActive(false); // Hide the pause menu
-                }
+                Resume();
             }
             else
             {
-                if (instantiatedPauseMenu == null)
-                {
-                    // Instantiate the pause menu if it doesn't already exist
-                    instantiatedPauseMenu = Instantiate(pauseMenu, Vector3.zero, Quaternion.identity);
-                }
-                else
-                {
-                    // Show the existing pause menu
-                    instantiatedPauseMenu.SetActive(true);
-                }
-
-                // Pause the game
-                Time.timeScale = 0f;
-                controls.Player.Disable();
-                isPaused = true;
-               
+                Pause();
             }
         };
 
@@ -130,6 +98,37 @@ public class PlayerController : MonoBehaviour, IBulletPool
         InitializePlayerBulletPool();
 
        
+    }
+
+    private void Pause()
+    {
+        if (instantiatedPauseMenu == null)
+        {
+            // Instantiate the pause menu if it doesn't already exist
+            instantiatedPauseMenu = Instantiate(pauseMenu, Vector3.zero, Quaternion.identity);
+        }
+        else
+        {
+            // Show the existing pause menu
+            instantiatedPauseMenu.SetActive(true);
+        }
+
+        Time.timeScale = 0f;
+        controls.Player.Disable();
+        isPaused = true;
+    }
+
+    // Called by the pause key and by the pause menu's Resume button
+    public void Resume()
+    {
+        Time.timeScale = 1f;
+        isPaused = false;
+        controls.Player.Enable(); // Re-enable player controls
+
+        if (instantiatedPauseMenu != null)
+        {
+            instantiatedPauseMenu.SetActive(false); // Hide the pause menu
+        }
     }
 
     private void Distort()
@@ -249,15 +248,7 @@ public class PlayerController : MonoBehaviour, IBulletPool
             // Start firing automatically
             StartFiring();
         }
-        else if (!autoFire && !isDistort)
-        {
-            CustomDebug.Log("Manual Fire");
-            // Start firing when the fire button is pressed
-            controls.Player.Fire.performed += ctx => StartFiring();
-            // Stop firing when the fire button is released
-            controls.Player.Fire.canceled += ctx => StopFiring();
-        }
-        else
+        else if (isDistort)
         {
             StopFiring();
         }
@@ -327,6 +318,9 @@ public class PlayerController : MonoBehaviour, IBulletPool
     {
         // Notify subscribers that the player has died
         OnPlayerDied?.Invoke();
+
+        // Free the generated input actions so they don't leak when the scene unloads
+        controls?.Dispose();
     }
 
    
