@@ -49,7 +49,7 @@ public class PlayerGrazeCheck : MonoBehaviour
         {
             // Check if the distance between bullet and the center of the player is greater than the hitbox radius.
             float dist = Vector2.Distance(bullet.transform.position, playerCenter.position);
-            if (dist > hitboxRadius && !bullet.hasHitPlayer)
+            if (dist > hitboxRadius && !bullet.hasHitPlayer && !bullet.hasBeenGrazed)
             {
                 // Mark the bullet as grazed and award points
                 bullet.hasBeenGrazed = true;

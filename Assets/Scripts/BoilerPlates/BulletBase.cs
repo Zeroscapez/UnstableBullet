@@ -30,6 +30,12 @@ public abstract class BulletBase : MonoBehaviour
         }
     }
 
+    // Runs every time the bullet is taken from a pool, so reset per-shot state here
+    protected virtual void OnEnable()
+    {
+        timer = 0f;
+    }
+
     protected virtual void FixedUpdate()
     {
         timer += Time.deltaTime;

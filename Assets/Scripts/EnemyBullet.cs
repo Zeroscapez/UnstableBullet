@@ -7,6 +7,13 @@ public class EnemyBullet : BulletBase
     public bool hasHitPlayer;
     public bool hasBeenGrazed;
 
+    protected override void OnEnable()
+    {
+        base.OnEnable();
+        hasHitPlayer = false;
+        hasBeenGrazed = false;
+    }
+
     new public void ReturnToPool()
     {
         
