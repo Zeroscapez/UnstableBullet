@@ -159,7 +159,7 @@ public class PlayerController : MonoBehaviour, IBulletPool
 
     private void GigaCrash()
     {
-        EnemyBullet[] enemyBullets = FindObjectsOfType<EnemyBullet>();
+        EnemyBullet[] enemyBullets = FindObjectsByType<EnemyBullet>();
 
         int bulletsCleared = 0;
         int pointsgained = 500;
