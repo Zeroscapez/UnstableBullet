@@ -8,10 +8,12 @@ public class MainMenuController : MonoBehaviour
 
     public GameObject mainmenu;
     public GameObject controls;
+    [SerializeField] private SettingsMenuControl settingsMenu;
     // Start is called before the first frame update
     void Start()
     {
         controls.SetActive(false);
+        if (settingsMenu != null) settingsMenu.gameObject.SetActive(false);
         mainmenu.SetActive(true);
     }
 
@@ -30,6 +32,12 @@ public class MainMenuController : MonoBehaviour
     {
         controls.SetActive(true);
         mainmenu.SetActive(false);
+    }
+
+    public void Settings()
+    {
+        mainmenu.SetActive(false);
+        settingsMenu.Open(() => mainmenu.SetActive(true));
     }
 
     public void Back()
