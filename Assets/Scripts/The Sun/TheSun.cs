@@ -371,17 +371,24 @@ public class TheSun : Enemy
         spawnerScript.rotateSpawner = shouldRotate;
         spawnerScript.rotationSpeed = rotationSpeed;
 
+        // Hold fire until the slide-in and delay finish (the prefab's spawner starts enabled)
+        spawnerScript.enabled = false;
+
         // Start movement and attack coroutine
         StartCoroutine(SpawnerAttackSequence(spawner, Vector3.down, spawnDelay));
     }
     private IEnumerator SpawnerAttackSequence(GameObject spawner, Vector3 moveDirection, float spawnerDelay)
     {
         Vector3 targetPosition = spawner.transform.position + moveDirection;
-        while (Vector3.Distance(spawner.transform.position, targetPosition) > 0.1f)
+        // The spawner can be destroyed mid-slide by a phase change, so check it every frame
+        while (spawner != null && Vector3.Distance(spawner.transform.position, targetPosition) > 0.1f)
         {
             spawner.transform.position = Vector3.MoveTowards(spawner.transform.position, targetPosition, Time.deltaTime * spawnerMoveDistance);
             yield return null;
         }
+
+        if (spawner == null)
+            yield break;
 
         // Wait for the delay
         yield return new WaitForSeconds(spawnerDelay);
