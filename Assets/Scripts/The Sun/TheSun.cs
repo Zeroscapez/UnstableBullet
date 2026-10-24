@@ -291,6 +291,8 @@ public class TheSun : Enemy
 
         spawner6 = Instantiate(spawnerPrefab, centerOfBounds.position, Quaternion.Euler(0, 0, -90));
         spawner7 = Instantiate(spawnerPrefab, centerOfBounds.position, Quaternion.Euler(0, 0, 0));
+        phase3Spawners.Add(spawner6);
+        phase3Spawners.Add(spawner7);
 
         ConfigureSpawner(
               spawner6, //Spawner Ref
