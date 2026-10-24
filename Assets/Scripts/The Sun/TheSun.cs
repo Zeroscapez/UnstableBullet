@@ -38,6 +38,10 @@ public class TheSun : Enemy
     [Header("State and Timer")]
     public TheSunBossState currentState = TheSunBossState.Phase1; 
     public float fightTimer = 0f;
+    [Tooltip("Fraction of max HP at which each phase starts")]
+    [SerializeField, Range(0f, 1f)] private float phase2P1Threshold = 0.8f;
+    [SerializeField, Range(0f, 1f)] private float phase2P2Threshold = 0.5f;
+    [SerializeField, Range(0f, 1f)] private float phase3Threshold = 0.3f;
     public float phase2P1HP;
     public float phase2P2HP;
     public float phase3HP;
@@ -54,9 +58,9 @@ public class TheSun : Enemy
     public override void Start()
     {
         this.currentHealth = maxHealth;
-        phase2P1HP = maxHealth * 0.8f;
-        phase2P2HP = maxHealth * 0.5f;
-        phase3HP = maxHealth * 0.3f;
+        phase2P1HP = maxHealth * phase2P1Threshold;
+        phase2P2HP = maxHealth * phase2P2Threshold;
+        phase3HP = maxHealth * phase3Threshold;
         originalPosition = transform.position;
 
         // Look up the HP bar's fill image once instead of every frame
@@ -92,13 +96,13 @@ public class TheSun : Enemy
         fightTimer = LevelManager.Instance.timer;
 
         // Check for phase transitions based on health
-        if (currentState == TheSunBossState.Phase1 && currentHealth <= (maxHealth * 0.8))
+        if (currentState == TheSunBossState.Phase1 && currentHealth <= phase2P1HP)
         {
             StartPhase2P1();
         }
 
 
-        if(currentState == TheSunBossState.Phase2P1 && currentHealth <= (maxHealth * 0.5))
+        if(currentState == TheSunBossState.Phase2P1 && currentHealth <= phase2P2HP)
         {
             StartPhase2P2();
         }
@@ -108,7 +112,7 @@ public class TheSun : Enemy
             MoveBoss();
         }
 
-        if (currentState == TheSunBossState.Phase2P2 && currentHealth <= (maxHealth * 0.3))
+        if (currentState == TheSunBossState.Phase2P2 && currentHealth <= phase3HP)
         {
            
             StartPhase3();
