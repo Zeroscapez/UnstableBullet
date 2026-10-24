@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEngine.UI;
-using Image = UnityEngine.UI.Image;
 
 
 public enum TheSunBossState
@@ -15,14 +13,12 @@ public class TheSun : Enemy
     [Header("Spawner Settings")]
     public GameObject spawnerPrefab;
     public float spawnerMoveDistance = 5f;
-    public float spawnerDelay = 2f;
     public Transform leftHand;
     public Transform rightHand;
     public Transform centerOfSun;
     public Transform centerOfBounds;
 
     [Header("Boss Settings")]
-    public Transform player;
     public GameObject idolHPBar;
     private Image idolFill;
 
@@ -46,8 +42,6 @@ public class TheSun : Enemy
     public float phase2P2HP;
     public float phase3HP;
 
-    private GameObject leftSpawner;
-    private GameObject rightSpawner;
 
     public bool DebugMode;
 
