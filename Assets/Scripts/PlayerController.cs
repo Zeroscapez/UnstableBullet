@@ -55,7 +55,7 @@ public class PlayerController : MonoBehaviour, IBulletPool
         controls.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         controls.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
-        autoFire = true;
+        autoFire = GameSettings.AutoFire; // Chosen in the settings menu (on by default)
 
         // Manual fire: hold the button to fire. Subscribed once here; auto fire is handled in Update.
         controls.Player.Fire.performed += ctx => { if (!autoFire) StartFiring(); };
@@ -118,6 +118,13 @@ public class PlayerController : MonoBehaviour, IBulletPool
         isPaused = true;
     }
 
+    // Called by the settings menu when the auto-fire option changes
+    public void SetAutoFire(bool on)
+    {
+        autoFire = on;
+        StopFiring(); // Auto fire restarts in Update; manual fire waits for the button
+    }
+
     // Called by the pause key and by the pause menu's Resume button
     public void Resume()
     {
@@ -127,6 +134,9 @@ public class PlayerController : MonoBehaviour, IBulletPool
 
         if (instantiatedPauseMenu != null)
         {
+            PauseMenuControl pauseMenuControl = instantiatedPauseMenu.GetComponent<PauseMenuControl>();
+            if (pauseMenuControl != null) pauseMenuControl.CloseSettings();
+
             instantiatedPauseMenu.SetActive(false); // Hide the pause menu
         }
     }
