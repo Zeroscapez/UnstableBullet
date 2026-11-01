@@ -9,11 +9,13 @@ public class MainMenuController : MonoBehaviour
     public GameObject mainmenu;
     public GameObject controls;
     [SerializeField] private SettingsMenuControl settingsMenu;
+    [SerializeField] private GameObject quitButton; // Desktop only; Application.Quit does nothing in a browser
     // Start is called before the first frame update
     void Start()
     {
         controls.SetActive(false);
         if (settingsMenu != null) settingsMenu.gameObject.SetActive(false);
+        if (quitButton != null && Application.platform == RuntimePlatform.WebGLPlayer) quitButton.SetActive(false);
         mainmenu.SetActive(true);
     }
 
@@ -38,6 +40,15 @@ public class MainMenuController : MonoBehaviour
     {
         mainmenu.SetActive(false);
         settingsMenu.Open(() => mainmenu.SetActive(true));
+    }
+
+    public void Quit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 
     public void Back()

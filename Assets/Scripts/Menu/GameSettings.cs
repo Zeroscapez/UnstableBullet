@@ -46,9 +46,27 @@ public static class GameSettings
         PlayerPrefs.Save();
     }
 
+    // Window size used when the player turns fullscreen off on desktop
+    private const int WindowedWidth = 1280;
+    private const int WindowedHeight = 720;
+
     public static void ApplyDisplay()
     {
-        Screen.fullScreen = Fullscreen;
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            // In a browser, resolution follows the page; only toggle fullscreen
+            Screen.fullScreen = Fullscreen;
+        }
+        else if (Fullscreen)
+        {
+            // Borderless fullscreen at the monitor's resolution
+            Screen.SetResolution(Display.main.systemWidth, Display.main.systemHeight, FullScreenMode.FullScreenWindow);
+        }
+        else
+        {
+            // Without this the window keeps the monitor's resolution and its title bar ends up off-screen
+            Screen.SetResolution(WindowedWidth, WindowedHeight, FullScreenMode.Windowed);
+        }
         QualitySettings.vSyncCount = VSync ? 1 : 0;
     }
 
