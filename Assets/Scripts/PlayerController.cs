@@ -118,6 +118,18 @@ public class PlayerController : MonoBehaviour, IBulletPool
         isPaused = true;
     }
 
+    // Pause when the game loses focus (browser tab switched, click outside the WebGL canvas, alt-tab)
+    // so the player doesn't come back mid-pattern. Skipped in the editor so clicking other windows doesn't pause.
+    private void OnApplicationFocus(bool hasFocus)
+    {
+#if !UNITY_EDITOR
+        if (!hasFocus && !isPaused && Time.timeScale > 0f)
+        {
+            Pause();
+        }
+#endif
+    }
+
     // Called by the settings menu when the auto-fire option changes
     public void SetAutoFire(bool on)
     {

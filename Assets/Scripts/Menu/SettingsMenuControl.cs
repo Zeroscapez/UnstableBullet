@@ -31,6 +31,16 @@ public class SettingsMenuControl : MonoBehaviour
         vsyncToggle.onValueChanged.AddListener(OnVSyncChanged);
         autoFireToggle.onValueChanged.AddListener(OnAutoFireChanged);
         backButton.onClick.AddListener(Close);
+
+        // VSync does nothing in a browser (the page sets the frame rate), so hide its row
+        // and move the Auto Fire row up into the gap
+        if (GameSettings.IsWebGL)
+        {
+            RectTransform vsyncRow = vsyncToggle.transform.parent as RectTransform;
+            RectTransform autoFireRow = autoFireToggle.transform.parent as RectTransform;
+            autoFireRow.anchoredPosition = vsyncRow.anchoredPosition;
+            vsyncRow.gameObject.SetActive(false);
+        }
     }
 
     private void OnEnable()
@@ -38,7 +48,8 @@ public class SettingsMenuControl : MonoBehaviour
         // Show the saved values without firing the change callbacks
         musicSlider.SetValueWithoutNotify(GameSettings.MusicVolume);
         sfxSlider.SetValueWithoutNotify(GameSettings.SfxVolume);
-        fullscreenToggle.SetIsOnWithoutNotify(GameSettings.Fullscreen);
+        // In a browser the player can leave fullscreen with Esc, so show the real state there
+        fullscreenToggle.SetIsOnWithoutNotify(GameSettings.IsWebGL ? Screen.fullScreen : GameSettings.Fullscreen);
         vsyncToggle.SetIsOnWithoutNotify(GameSettings.VSync);
         autoFireToggle.SetIsOnWithoutNotify(GameSettings.AutoFire);
 

@@ -41,6 +41,9 @@ public static class GameSettings
         set => PlayerPrefs.SetInt(AutoFireKey, value ? 1 : 0);
     }
 
+    // In a browser build the page controls frame pacing (so VSync does nothing) and fullscreen needs a user gesture
+    public static bool IsWebGL => Application.platform == RuntimePlatform.WebGLPlayer;
+
     public static void Save()
     {
         PlayerPrefs.Save();
@@ -57,8 +60,9 @@ public static class GameSettings
     {
         QualitySettings.vSyncCount = VSync ? 1 : 0;
 
-        // Only override the window mode once the player has chosen one in the settings menu
-        if (PlayerPrefs.HasKey(FullscreenKey))
+        // Only override the window mode once the player has chosen one in the settings menu.
+        // Browsers only allow fullscreen in response to a click or key press, so skip it on WebGL.
+        if (PlayerPrefs.HasKey(FullscreenKey) && !IsWebGL)
         {
             Screen.fullScreen = Fullscreen;
         }
